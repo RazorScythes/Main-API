@@ -8,7 +8,7 @@ const path                      = require('path')
 // const User                      = require('./models/user.model')
 // const bcrypt                    = require("bcryptjs")
 
-const auth_router               = require('./routes/auth')
+// const auth_router               = require('./routes/auth')
 
 require('dotenv').config()
 
@@ -56,7 +56,7 @@ app.use(cors())
 
 app.use(express.static(path.join(__dirname,'/public')));
 
-app.use('/auth', auth_router)
+// app.use('/auth', auth_router)
 
 
 
