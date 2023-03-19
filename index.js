@@ -4,7 +4,7 @@ const express                   = require('express')
 const cors                      = require('cors')
 const morgan                    = require('morgan')
 const path                      = require('path')
-const mongoose                  = require('mongoose')
+// const mongoose                  = require('mongoose')
 // const User                      = require('./models/user.model')
 // const bcrypt                    = require("bcryptjs")
 
@@ -17,18 +17,21 @@ const port = process.env.PORT || 3000
 
 const db = mongoose.connection
 
-mongoose.connect(`mongodb+srv://RazorScythe:QMciXCA2YyiaqmRX@cluster0.idzctai.mongodb.net/?retryWrites=true&w=majority`, {useNewUrlParser: true, useUnifiedTopology: true})
-.then(() => {
-    app.listen(port, (err) => {
-        if(err) throw err
-        console.log(`Server is running on PORT: ${port}`)
-    })
-})
+// mongoose.connect(`mongodb+srv://RazorScythe:QMciXCA2YyiaqmRX@cluster0.idzctai.mongodb.net/?retryWrites=true&w=majority`, {useNewUrlParser: true, useUnifiedTopology: true})
+// .then(() => {
+//     app.listen(port, (err) => {
+//         if(err) throw err
+//         console.log(`Server is running on PORT: ${port}`)
+//     })
+// })
 
-db.once('open', () => {
-    console.log('Database Connection Established')
+// db.once('open', () => {
+//     console.log('Database Connection Established')
+// })
+app.listen(port, (err) => {
+    if(err) throw err
+    console.log(`Server is running on PORT: ${port}`)
 })
-
 app.use(hsts({
     maxAge: 31536000,        // Must be at least 1 year to be approved
     includeSubDomains: true, // Must be enabled to be approved
