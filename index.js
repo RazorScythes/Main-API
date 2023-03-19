@@ -5,8 +5,8 @@ const cors                      = require('cors')
 const morgan                    = require('morgan')
 const path                      = require('path')
 const mongoose                  = require('mongoose')
-const User                      = require('./models/user.model')
-const bcrypt                    = require("bcryptjs")
+// const User                      = require('./models/user.model')
+// const bcrypt                    = require("bcryptjs")
 
 // const auth_router               = require('./routes/auth')
 
@@ -32,6 +32,26 @@ mongoose.connect(`mongodb+srv://vercel-admin-user:YULFVGWrH8jmI4Ef@cluster0.idzc
 db.once('open', () => {
     console.log('Database Connection Established')
 })
+
+// let conn = null;
+
+// const uri = 'YOUR CONNECTION STRING HERE';
+
+// exports.connect = async function() {
+//   if (conn == null) {
+//     conn = mongoose.connect(uri, {
+//       serverSelectionTimeoutMS: 5000
+//     }).then(() => mongoose);
+
+//     // `await`ing connection after assigning to the `conn` variable
+//     // to avoid multiple function calls creating new connections
+//     await conn;
+//   }
+
+//   return conn;
+// };
+
+// console.log(connect())
 // app.listen(port, (err) => {
 //     if(err) throw err
 //     console.log(`Server is running on PORT: ${port}`)
