@@ -17,7 +17,7 @@ const port = process.env.PORT || 3000
 
 const db = mongoose.connection
 
-mongoose.connect(`mongodb+srv://RazorScythe:QMciXCA2YyiaqmRX@cluster0.idzctai.mongodb.net/?retryWrites=true&w=majority`, 
+mongoose.connect(`mongodb+srv://vercel-admin-user:YULFVGWrH8jmI4Ef@cluster0.idzctai.mongodb.net/main?retryWrites=true&w=majority`, 
 {   
     useNewUrlParser: true, 
     useUnifiedTopology: true
