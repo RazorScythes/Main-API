@@ -5,8 +5,8 @@ const cors                      = require('cors')
 const morgan                    = require('morgan')
 const path                      = require('path')
 const mongoose                  = require('mongoose')
-const User                      = require('./models/user.model')
-const bcrypt                    = require("bcryptjs")
+// const User                      = require('./models/user.model')
+// const bcrypt                    = require("bcryptjs")
 
 const auth_router               = require('./routes/auth')
 
@@ -60,26 +60,26 @@ app.use('/auth', auth_router)
 /*
     Creating Admin by Default
 */
-async function defaultAdmin() {
-    let default_admin = await User.find({username: 'admin'})
-    if(default_admin.length > 0) return
+// async function defaultAdmin() {
+//     let default_admin = await User.find({username: 'admin'})
+//     if(default_admin.length > 0) return
 
-    let password = "admin"
+//     let password = "admin"
 
-    try {
-        let hashedPassword = await bcrypt.hash(password, 12);
+//     try {
+//         let hashedPassword = await bcrypt.hash(password, 12);
 
-        const newAccount = new User({
-            role : "Admin",
-            email: "jamesarviemaderas@gmail.com",
-            username : 'admin',
-            password: hashedPassword
-        })
-        await newAccount.save().then("Default Admin created");
+//         const newAccount = new User({
+//             role : "Admin",
+//             email: "jamesarviemaderas@gmail.com",
+//             username : 'admin',
+//             password: hashedPassword
+//         })
+//         await newAccount.save().then("Default Admin created");
 
-    } catch (error) {
-        console.log(error)
-    }
-}
+//     } catch (error) {
+//         console.log(error)
+//     }
+// }
 
-defaultAdmin()
+// defaultAdmin()
