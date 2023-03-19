@@ -15,7 +15,7 @@ require('dotenv').config()
 const app = express()
 const port = process.env.PORT || 3000
 
-const db = mongoose.connection
+// const db = mongoose.connection
 
 // mongoose.connect(`mongodb+srv://RazorScythe:QMciXCA2YyiaqmRX@cluster0.idzctai.mongodb.net/?retryWrites=true&w=majority`, {useNewUrlParser: true, useUnifiedTopology: true})
 // .then(() => {
