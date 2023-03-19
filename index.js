@@ -1,18 +1,32 @@
-const https             = require('https');
-const hsts              = require('hsts')
-const express           = require('express')
-const cors              = require('cors')
-const morgan            = require('morgan')
-const path              = require('path')
+const https                     = require('https');
+const hsts                      = require('hsts')
+const express                   = require('express')
+const cors                      = require('cors')
+const morgan                    = require('morgan')
+const path                      = require('path')
+const mongoose                  = require('mongoose')
+const User                      = require('./models/user.model')
+const bcrypt                    = require("bcryptjs")
+
+const auth_router               = require('./routes/auth')
 
 require('dotenv').config()
 
 const app = express()
 const port = process.env.PORT || 3000
 
-app.listen(port, (err) => {
-    if(err) throw err
-    console.log(`Server is running on PORT: ${port}`)
+const db = mongoose.connection
+
+mongoose.connect(`mongodb+srv://RazorScythe:QMciXCA2YyiaqmRX@cluster0.idzctai.mongodb.net/?retryWrites=true&w=majority`, {useNewUrlParser: true, useUnifiedTopology: true})
+.then(() => {
+    app.listen(port, (err) => {
+        if(err) throw err
+        console.log(`Server is running on PORT: ${port}`)
+    })
+})
+
+db.once('open', () => {
+    console.log('Database Connection Established')
 })
 
 app.use(hsts({
@@ -30,8 +44,7 @@ app.use(express.urlencoded({
 
 
 app.get("/", (req, res) => {
-    console.log("OK")
-    res.send("ok")
+    res.send("This API is working Properly")
 })
 
 app.use(express.json({limit: '150mb'}))
@@ -39,3 +52,34 @@ app.use(express.json({limit: '150mb'}))
 app.use(cors())
 
 app.use(express.static(path.join(__dirname,'/public')));
+
+app.use('/auth', auth_router)
+
+
+
+/*
+    Creating Admin by Default
+*/
+async function defaultAdmin() {
+    let default_admin = await User.find({username: 'admin'})
+    if(default_admin.length > 0) return
+
+    let password = "admin"
+
+    try {
+        let hashedPassword = await bcrypt.hash(password, 12);
+
+        const newAccount = new User({
+            role : "Admin",
+            email: "jamesarviemaderas@gmail.com",
+            username : 'admin',
+            password: hashedPassword
+        })
+        await newAccount.save().then("Default Admin created");
+
+    } catch (error) {
+        console.log(error)
+    }
+}
+
+defaultAdmin()
