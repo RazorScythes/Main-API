@@ -4,7 +4,7 @@ const express                   = require('express')
 const cors                      = require('cors')
 const morgan                    = require('morgan')
 const path                      = require('path')
-// const mongoose                  = require('mongoose')
+const mongoose                  = require('mongoose')
 // const User                      = require('./models/user.model')
 // const bcrypt                    = require("bcryptjs")
 
