@@ -45,19 +45,16 @@ app.use(express.urlencoded({
     extended: true 
 }))
 
-app.all('/*', function(req, res, next) {
-    res.header("Access-Control-Allow-Origin", "*");
-    res.header("Access-Control-Allow-Headers", "X-Requested-With");
-    next();
-});
-
 app.get("/", (res) => {
     res.send("This API is working Properly")
 })
 
 app.use(express.json({limit: '150mb'}))
 
-app.use(cors({credentials: true, origin: true}))
+app.use(cors({
+    credentials: true, 
+    origin: "*"
+}))
 
 app.use(express.static(path.join(__dirname,'/public')));
 
