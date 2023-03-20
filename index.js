@@ -34,8 +34,10 @@ db.once('open', () => {
 
 // Define the allowCors middleware
 const allowCors = fn => async (req, res) => {
+    const origin = req.headers.origin;
+
     res.setHeader('Access-Control-Allow-Credentials', true);
-    res.setHeader('Access-Control-Allow-Origin', '*');
+    res.setHeader('Access-Control-Allow-Origin', origin || '*');
     res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PATCH, DELETE, OPTIONS');
     res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
     if (req.method === 'OPTIONS') {
@@ -58,15 +60,14 @@ app.use(express.urlencoded({
     extended: true 
 }))
 
-app.get("/", (res) => {
+app.get("/", allowCors((res) => {
     res.send("This API is working Properly")
-})
+}))
 
 app.use(express.json({limit: '150mb'}))
 
 app.use(cors({
     credentials: true, 
-    origin: "https://main-api-eight.vercel.app/"
 }))
 
 app.use(express.static(path.join(__dirname,'/public')));
