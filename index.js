@@ -66,7 +66,7 @@ app.use(express.json({limit: '150mb'}))
 
 app.use(cors({
     credentials: true, 
-    origin: "*"
+    origin: "https://main-api-eight.vercel.app/"
 }))
 
 app.use(express.static(path.join(__dirname,'/public')));
