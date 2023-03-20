@@ -3,6 +3,8 @@ const bcrypt        = require('bcryptjs')
 const jwt           = require('jsonwebtoken')
 
 exports.SignIn = async (req, res) => {
+    if(req.method === 'OPTIONS') { return res.status(200).json(({ body: "OK" })) }
+
     const { username, password } = req.body
     console.log(req.body)
     return
@@ -33,6 +35,8 @@ exports.SignIn = async (req, res) => {
 }
 
 exports.getAdmin = async (req, res) => {
+    if(req.method === 'OPTIONS') { return res.status(200).json(({ body: "OK" })) }
+    
     Users.find({})
     .then(async(results) => {
         res.send(`accounts: ${results}`)
