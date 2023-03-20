@@ -75,7 +75,7 @@ app.use(cors({
 
 app.use(express.static(path.join(__dirname,'/public')));
 
-app.use('/auth', auth_router)
+app.use('/auth', allowCors(auth_router))
 
 
 
