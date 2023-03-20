@@ -61,9 +61,11 @@ app.use(express.urlencoded({
     extended: true 
 }))
 
-app.get("/", allowCors((res) => {
-    res.send("This API is working Properly")
-}))
+const handleGet = (req, res) => {
+    res.send('This is a GET request');
+};
+
+app.get("/", allowCors(handleGet))
 
 app.use(express.json({limit: '150mb'}))
 
