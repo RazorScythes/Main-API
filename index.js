@@ -41,6 +41,7 @@ const allowCors = fn => async (req, res) => {
     res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PATCH, DELETE, OPTIONS');
     res.setheader("Access-Control-Allow-Headers", "X-Requested-With");
     res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+    
     if (req.method === 'OPTIONS') {
       res.sendStatus(200);
       return;
@@ -73,7 +74,7 @@ app.use(cors({
 
 app.use(express.static(path.join(__dirname,'/public')));
 
-app.use('/auth', allowCors(auth_router))
+app.use('/auth', auth_router)
 
 
 
