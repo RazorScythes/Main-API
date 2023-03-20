@@ -6,7 +6,7 @@ exports.SignIn = async (req, res) => {
     const { username, password } = req.body
 
     try {
-        const existingUser = await Users.findOne({ username }).populate('alumni_id')
+        const existingUser = await Users.findOne({ username })
         
         if(!existingUser) return res.status(404).json({ message: 'User does not exist.' })
 
@@ -15,11 +15,6 @@ exports.SignIn = async (req, res) => {
             username: existingUser.username,
             role: existingUser.role,
             name: existingUser.name
-        }
-
-        if(existingUser.alumni_id) {
-            userObj.alumni_id = existingUser.alumni_id._id
-            userObj.student_number = existingUser.alumni_id.student_number
         }
 
         const isPasswordCorrect = await bcrypt.compare(password, existingUser.password)
