@@ -32,6 +32,19 @@ db.once('open', () => {
     console.log('Database Connection Established')
 })
 
+// Define the allowCors middleware
+const allowCors = fn => async (req, res) => {
+    res.setHeader('Access-Control-Allow-Credentials', true);
+    res.setHeader('Access-Control-Allow-Origin', '*');
+    res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PATCH, DELETE, OPTIONS');
+    res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+    if (req.method === 'OPTIONS') {
+      res.sendStatus(200);
+      return;
+    }
+    return await fn(req, res);
+};
+
 app.use(hsts({
     maxAge: 31536000,        // Must be at least 1 year to be approved
     includeSubDomains: true, // Must be enabled to be approved
@@ -58,7 +71,7 @@ app.use(cors({
 
 app.use(express.static(path.join(__dirname,'/public')));
 
-app.use('/auth', auth_router)
+app.use('/auth', allowCors(auth_router))
 
 
 
