@@ -3,11 +3,9 @@ const bcrypt        = require('bcryptjs')
 const jwt           = require('jsonwebtoken')
 
 exports.SignIn = async (req, res) => {
-    if(req.method === 'OPTIONS') { return res.status(200).json(({ body: "OK" })) }
 
     const { username, password } = req.body
-    console.log(req.body)
-    return
+
     try {
         const existingUser = await Users.findOne({ username })
 

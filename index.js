@@ -34,18 +34,16 @@ db.once('open', () => {
 
 // Define the allowCors middleware
 const allowCors = fn => async (req, res) => {
-    const origin = req.headers.origin;
-
+    res.setHeader('Access-Control-Allow-Origin', '*');
+    res.setHeader('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept');
     res.setHeader('Access-Control-Allow-Credentials', true);
-    res.setHeader('Access-Control-Allow-Origin', origin || '*');
-    res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PATCH, DELETE, OPTIONS');
-    res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+    res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, PATCH, OPTIONS, DELETE');
     
-    if (req.method === 'OPTIONS') {
-      res.sendStatus(200);
-      return;
+    if(req.method === 'OPTIONS') {
+        return res.status(200).json(({
+            body: "OK"
+        }))
     }
-    return await fn(req, res);
 };
 
 
