@@ -9,7 +9,7 @@ exports.SignIn = async (req, res) => {
     try {
         const existingUser = await Users.findOne({ username })
 
-        if(!existingUser) return res.status(404).json({ message: 'User does not exist.' })
+        if(!existingUser) return res.status(404).json({ message: 'Unknown username or password' })
 
         let userObj = {
             _id: existingUser._id,
@@ -20,7 +20,7 @@ exports.SignIn = async (req, res) => {
 
         const isPasswordCorrect = await bcrypt.compare(password, existingUser.password)
 
-        if(!isPasswordCorrect) return res.status(404).json({ message: "Invalid credentials" })
+        if(!isPasswordCorrect) return res.status(404).json({ message: "Unknown username or password" })
         
         const token = jwt.sign({ email: userObj.username, id: userObj._id }, `${process.env.SECRET_KEY}`, { expiresIn: '9999years' } )
         
