@@ -48,6 +48,14 @@ const allowCors = fn => async (req, res) => {
     return await fn(req, res);
 };
 
+
+app.use((req, res, next) => {
+    res.setHeader('Access-Control-Allow-Origin', '*');
+    res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, PATCH, DELETE');
+    res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+    next();
+});
+
 app.use(hsts({
     maxAge: 31536000,        // Must be at least 1 year to be approved
     includeSubDomains: true, // Must be enabled to be approved
@@ -65,7 +73,7 @@ const handleGet = (req, res) => {
     res.send('This is a GET request');
 };
 
-app.get("/", allowCors(handleGet))
+app.get("/", handleGet)
 
 app.use(express.json({limit: '150mb'}))
 
@@ -75,7 +83,7 @@ app.use(cors({
 
 app.use(express.static(path.join(__dirname,'/public')));
 
-app.use('/auth', allowCors(auth_router))
+app.use('/auth', auth_router)
 
 
 
