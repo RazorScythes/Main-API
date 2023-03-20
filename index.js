@@ -7,7 +7,6 @@ const path                      = require('path')
 const mongoose                  = require('mongoose')
 const User                      = require('./models/user.model')
 const bcrypt                    = require("bcryptjs")
-const cors_                     = require('./cors')
 const auth_router               = require('./routes/auth')
 
 require('dotenv').config()
@@ -53,11 +52,11 @@ app.get("/", (req, res) => {
 
 app.use(express.json({limit: '150mb'}))
 
-app.use(cors())
+app.use(cors({credentials: true, origin: true}))
 
 app.use(express.static(path.join(__dirname,'/public')));
 
-app.use('/auth', cors_, auth_router)
+app.use('/auth', auth_router)
 
 
 
