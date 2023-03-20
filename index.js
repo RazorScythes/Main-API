@@ -7,7 +7,7 @@ const path                      = require('path')
 const mongoose                  = require('mongoose')
 const User                      = require('./models/user.model')
 const bcrypt                    = require("bcryptjs")
-const auth_router               = require('./routes/auth')
+const auth_router               = require('./api/auth')
 
 require('dotenv').config()
 
