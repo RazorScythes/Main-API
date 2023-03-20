@@ -33,26 +33,20 @@ db.once('open', () => {
 })
 
 // Define the allowCors middleware
-const allowCors = fn => async (req, res) => {
-    res.setHeader('Access-Control-Allow-Origin', '*');
-    res.setHeader('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept');
-    res.setHeader('Access-Control-Allow-Credentials', true);
-    res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, PATCH, OPTIONS, DELETE');
+// const allowCors = fn => async (req, res) => {
+//     res.setHeader('Access-Control-Allow-Origin', '*');
+//     res.setHeader('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept');
+//     res.setHeader('Access-Control-Allow-Credentials', true);
+//     res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, PATCH, OPTIONS, DELETE');
     
-    if(req.method === 'OPTIONS') {
-        return res.status(200).json(({
-            body: "OK"
-        }))
-    }
-};
-
-
-app.use((req, res, next) => {
-    res.setHeader('Access-Control-Allow-Origin', '*');
-    res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, PATCH, DELETE');
-    res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
-    next();
-});
+//     if(req.method === 'OPTIONS') {
+//         return res.status(200).json(({
+//             body: "OK"
+//         }))
+//     }
+    
+//     return await fn(req, res);
+// };
 
 app.use(hsts({
     maxAge: 31536000,        // Must be at least 1 year to be approved
@@ -81,7 +75,7 @@ app.use(cors({
 
 app.use(express.static(path.join(__dirname,'/public')));
 
-app.use('/auth', allowCors(auth_router))
+app.use('/auth', auth_router)
 
 
 

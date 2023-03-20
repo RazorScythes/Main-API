@@ -10,7 +10,7 @@ exports.SignIn = async (req, res) => {
         const existingUser = await Users.findOne({ username })
 
         res.send(existingUser)
-        return
+
         if(!existingUser) return res.status(404).json({ message: 'User does not exist.' })
 
         let userObj = {
