@@ -10,7 +10,7 @@ const bcrypt                    = require("bcryptjs")
 
 // const { initFolders }                   = require('./folder')
 const auth_router                       = require('./api/auth')
-// const portfolio_router                  = require('./api/portfolio')
+const portfolio_router                  = require('./api/portfolio')
 
 require('dotenv').config()
 
@@ -66,7 +66,7 @@ app.use(cors({
 app.use(express.static(path.join(__dirname,'/public')));
 
 app.use('/auth', auth_router)
-// app.use('/portfolio', portfolio_router)
+app.use('/portfolio', portfolio_router)
 
 
 /*
