@@ -8,14 +8,14 @@ const mongoose                  = require('mongoose')
 const User                      = require('./models/user.model')
 const bcrypt                    = require("bcryptjs")
 
-// const { initFolders }                   = require('./folder')
+const { initFolders }                   = require('./folder')
 const auth_router                       = require('./api/auth')
 const portfolio_router                  = require('./api/portfolio')
 
 require('dotenv').config()
 
-// const folders = ['public', 'public/portfolio_hero_image']
-// initFolders(folders)
+const folders = ['public', 'public/portfolio_hero_image']
+initFolders(folders)
 
 const app = express()
 const port = process.env.PORT || 3000
