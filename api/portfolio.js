@@ -2,9 +2,8 @@ const express           = require('express')
 const router            = express.Router()
 const { allowCors }     = require('../cors')
 
-const { SignIn, getAdmin } = require('../controller/auth')
+const { uploadHero } = require('../controller/portfolio')
 
-router.post('/signin', allowCors(SignIn))
-router.get('/test_user', getAdmin)
+router.post('/hero', allowCors(uploadHero))
 
 module.exports = router

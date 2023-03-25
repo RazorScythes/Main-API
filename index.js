@@ -7,9 +7,15 @@ const path                      = require('path')
 const mongoose                  = require('mongoose')
 const User                      = require('./models/user.model')
 const bcrypt                    = require("bcryptjs")
-const auth_router               = require('./api/auth')
+
+const { initFolders }                   = require('./folder')
+const auth_router                       = require('./api/auth')
+const portfolio_router                  = require('./api/portfolio')
 
 require('dotenv').config()
+
+const folders = ['public', 'public/portfolio_hero_image']
+initFolders(folders)
 
 const app = express()
 const port = process.env.PORT || 3000
@@ -31,22 +37,6 @@ mongoose.connect(`mongodb+srv://vercel-admin-user:YULFVGWrH8jmI4Ef@cluster0.idzc
 db.once('open', () => {
     console.log('Database Connection Established')
 })
-
-// Define the allowCors middleware
-// const allowCors = fn => async (req, res) => {
-//     res.setHeader('Access-Control-Allow-Origin', '*');
-//     res.setHeader('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept');
-//     res.setHeader('Access-Control-Allow-Credentials', true);
-//     res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, PATCH, OPTIONS, DELETE');
-    
-//     if(req.method === 'OPTIONS') {
-//         return res.status(200).json(({
-//             body: "OK"
-//         }))
-//     }
-    
-//     return await fn(req, res);
-// };
 
 app.use(hsts({
     maxAge: 31536000,        // Must be at least 1 year to be approved
@@ -76,7 +66,7 @@ app.use(cors({
 app.use(express.static(path.join(__dirname,'/public')));
 
 app.use('/auth', auth_router)
-
+app.use('/portfolio', portfolio_router)
 
 
 /*
