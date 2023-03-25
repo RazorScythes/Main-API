@@ -13,13 +13,13 @@ const portfolio_router                  = require('./api/portfolio')
 
 require('dotenv').config()
 
-if(process.env.DEVELOPMENT){
-    const { initFolders }       = require('./folder')
+//if(process.env.DEVELOPMENT){
+//    const { initFolders }       = require('./folder')
 
-    const folders = ['public', 'public/portfolio_hero_image']
+//    const folders = ['public', 'public/portfolio_hero_image']
     
-    initFolders(folders)
-}
+//    initFolders(folders)
+//}
 
 const app = express()
 const port = process.env.PORT || 3000
