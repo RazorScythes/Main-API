@@ -11,6 +11,10 @@ const userSchema = Schema({
         type: Schema.Types.ObjectId,
         ref: 'Profile'
     },
+    portfolio_id: {
+        type: Schema.Types.ObjectId,
+        ref: 'Portfolio'
+    },
     reset_password: { type: Boolean },
     verified: { type: Boolean }
 },{
