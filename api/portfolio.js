@@ -1,6 +1,6 @@
 const express           = require('express')
 const router            = express.Router()
-const { allowCors }     = require('../cors')
+// const { allowCors }     = require('../cors')
 
 const { uploadHero, getPortfolio } = require('../controller/portfolio')
 
