@@ -13,13 +13,13 @@ const portfolio_router                  = require('./api/portfolio')
 
 require('dotenv').config()
 
-//if(process.env.DEVELOPMENT){
+// if(process.env.DEVELOPMENT){
 //    const { initFolders }       = require('./folder')
 
-//    const folders = ['public', 'public/portfolio_hero_image']
+//    const folders = ['public', 'public/portfolio_hero_image', 'tmp', 'tmp/portfolio_hero_image']
     
 //    initFolders(folders)
-//}
+// }
 
 const app = express()
 const port = process.env.PORT || 3000
@@ -67,7 +67,7 @@ app.use(cors({
     credentials: true, 
 }))
 
-app.use(express.static(path.join(__dirname,'/public')));
+app.use(express.static(path.join(__dirname,'/tmp')));
 
 app.use('/auth', auth_router)
 app.use('/portfolio', portfolio_router)
