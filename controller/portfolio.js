@@ -25,7 +25,7 @@ exports.getPortfolio = async (req, res) => {
 
 exports.uploadHero = async (req, res) => {
     const { id, full_name, description, profession, animation } = req.body
-    let existing = await Users.findById(req.body.id)
+    let existing = await Users.findById(req.body.id).populate('portfolio_id')
 
     let image_path = ''
 
@@ -57,8 +57,9 @@ exports.uploadHero = async (req, res) => {
             });
         }
         else {
+            //console.log(existing)
             if(!image_path) 
-                if(existing.portfolio_id.hero.image !== '')
+                if(existing.portfolio_id.hero)
                     hero['image'] = existing.portfolio_id.hero.image
 
             await Portfolio.findByIdAndUpdate(existing.portfolio_id, { ...hero, hero }, {new: true})
@@ -72,6 +73,7 @@ exports.uploadHero = async (req, res) => {
             })
         }
     } catch (error) {
+        console.log(error)
         res.status(409).json({ 
             variant: 'danger',
             message: "409: there was a problem with the server."
