@@ -30,12 +30,13 @@ exports.uploadHero = async (req, res) => {
     let image_path = ''
 
     if(req.body.image) {
-        let image = filename(req.body.image)
-        ba64.writeImage(`tmp/${image_folder}/${image}`, req.body.image, function(err){
-            if (err) throw err;     
-            console.log(`${image} saved successfully`);
-        });
-        image_path = `${process.env.DOMAIN}${image_folder}/${image}.${getExtensionName(req.body.image)}`
+        // let image = filename(req.body.image)
+        // ba64.writeImage(`tmp/${image_folder}/${image}`, req.body.image, function(err){
+        //     if (err) throw err;     
+        //     console.log(`${image} saved successfully`);
+        // });
+        // image_path = `${process.env.DOMAIN}${image_folder}/${image}.${getExtensionName(req.body.image)}`
+        image_path = req.body.image
     }   
 
     const hero = { image: image_path, full_name: full_name, description: description, profession: profession, animation: animation }
