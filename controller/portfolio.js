@@ -41,8 +41,6 @@ exports.uploadHero = async (req, res) => {
 
     const hero = { image: image_path, full_name: full_name, description: description, profession: profession, animation: animation }
 
-    if(!image_path) delete hero['image']
-
     const newPortfolio = new Portfolio({ user: id, hero })
 
     try {
@@ -59,6 +57,8 @@ exports.uploadHero = async (req, res) => {
             });
         }
         else {
+            if(!image_path) hero['image'] = existing.portfolio_id.image
+
             await Portfolio.findByIdAndUpdate(existing.portfolio_id, { ...hero, hero }, {new: true})
             .then(async (data) => {
                 let user = await Users.findById(id).populate('portfolio_id')
