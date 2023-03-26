@@ -31,7 +31,7 @@ exports.uploadHero = async (req, res) => {
 
     if(req.body.image) {
         let image = filename(req.body.image)
-        ba64.writeImageSync(`public/${image_folder}/${image}`, req.body.image, function(err){
+        ba64.writeImage(`public/${image_folder}/${image}`, req.body.image, function(err){
             if (err) throw err;     
             console.log(`${image} saved successfully`);
         });
