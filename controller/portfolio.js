@@ -18,10 +18,9 @@ function getExtensionName(base64String){
 
 exports.getPortfolio = async (req, res) => {
     const { id } = req.body
-    console.log(id)
     await Users.findById(id).populate('portfolio_id')
-        .then(user => res.status(200).json(user.portfolio_id))
-        .catch(err => res.status(404).json({ message: err }))
+        .then(user => res.status(200).json({ result: user.portfolio_id }))
+        .catch(err => res.status(404).json({ variant: 'danger', message: err }))
 }
 
 exports.uploadHero = async (req, res) => {
@@ -41,6 +40,8 @@ exports.uploadHero = async (req, res) => {
 
     const hero = { image: image_path, full_name: full_name, description: description, profession: profession, animation: animation }
 
+    if(!image_path) delete hero['image']
+
     const newPortfolio = new Portfolio({ user: id, hero })
 
     try {
@@ -50,16 +51,27 @@ exports.uploadHero = async (req, res) => {
             });
 
             let user = await Users.findById(id).populate('portfolio_id')
-            res.status(200).json(user.portfolio_id);
+            res.status(200).json({
+                variant: 'success',
+                alert: "Hero data successfully added!",
+                result: user.portfolio_id
+            });
         }
         else {
-            await Portfolio.findByIdAndUpdate(existing.portfolio_id, { hero }, {new: true})
+            await Portfolio.findByIdAndUpdate(existing.portfolio_id, { ...hero, hero }, {new: true})
             .then(async (data) => {
                 let user = await Users.findById(id).populate('portfolio_id')
-                res.status(200).json(user.portfolio_id);
+                res.status(200).json({
+                    variant: 'success',
+                    alert: "Hero successfully updated!",
+                    result: user.portfolio_id
+                });
             })
         }
     } catch (error) {
-        res.status(409).json({ message: error.message });
+        res.status(409).json({ 
+            variant: 'danger',
+            message: "409: there was a problem with the server."
+        });
     }
 }
