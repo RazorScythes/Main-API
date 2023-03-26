@@ -57,7 +57,9 @@ exports.uploadHero = async (req, res) => {
             });
         }
         else {
-            if(!image_path) hero['image'] = existing.portfolio_id.hero.image
+            if(!image_path) 
+                if(existing.portfolio_id.hero.image !== '')
+                    hero['image'] = existing.portfolio_id.hero.image
 
             await Portfolio.findByIdAndUpdate(existing.portfolio_id, { ...hero, hero }, {new: true})
             .then(async (data) => {
