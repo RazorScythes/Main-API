@@ -4,8 +4,6 @@ const router            = express.Router()
 
 const { SignIn, getAdmin } = require('../controller/auth')
 
-const { uploadHero, getPortfolio } = require('../controller/portfolio')
-
 const allowCors = fn => async (req, res) => {
     res.setHeader('Access-Control-Allow-Credentials', true)
     res.setHeader('Access-Control-Allow-Origin', '*')

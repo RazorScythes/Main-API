@@ -12,7 +12,7 @@ const auth_router                       = require('./api/auth')
 const portfolio_router                  = require('./api/portfolio')
 
 require('dotenv').config()
-
+console.log(__dirname)
 // if(process.env.DEVELOPMENT){
 //    const { initFolders }       = require('./folder')
 

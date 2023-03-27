@@ -1,8 +1,20 @@
-const express           = require('express')
-const router            = express.Router()
-// const { allowCors }     = require('../cors')
+const multer            = require('multer')
+const express             = require('express')
+const router              = express.Router()
 
 const { uploadHero, getPortfolio } = require('../controller/portfolio')
+
+// const upload = multer({ storage: multer.memoryStorage() })
+const upload        = multer.diskStorage({ 
+  destination: (req, file, cb) => {
+      cb(null, 'tmp')
+  },
+  filename: (req, file, cb) => {
+      cb(null, file.originalname)
+  }
+})
+
+const file = multer({storage: upload})
 
 const allowCors = fn => async (req, res) => {
     res.setHeader('Access-Control-Allow-Credentials', true)
@@ -24,4 +36,4 @@ const allowCors = fn => async (req, res) => {
 router.post('/getPortfolio', allowCors(getPortfolio))
 router.post('/hero', allowCors(uploadHero))
 
-module.exports = router
+module.exports = router 
