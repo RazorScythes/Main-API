@@ -37,48 +37,152 @@ exports.getPortfolio = async (req, res) => {
 }
 
 exports.uploadHero = async (req, res) => {
-    console.log(req.body)
-    jwtClient.authorize((err, tokens) => {
+    jwtClient.authorize(async (err, tokens) => {
+        const { id, full_name, description, profession, animation } = req.body
+        let existing = await Users.findById(req.body.id).populate('portfolio_id')
+
         if (err) {
-          console.error('Error while trying to authorize JWT client', err);
-          return;
+            return res.status(409).json({ 
+                variant: 'danger',
+                message: "409: Error while trying to authorize JWT client."
+            });
         }
-      
-        const drive = google.drive({
-          version: 'v3',
-          auth: jwtClient
-        });
-
-        // Base64-encoded image data
-        const base64Data = req.body.image;
-
-        // Remove the data URI prefix and create a buffer from the base64-encoded data
-        const imageData = Buffer.from(base64Data.replace(/^data:image\/\w+;base64,/, ''), 'base64');
         
-        const fileMetadata = {
-            name: 'my-image.png',
-            parents: ['1nv7HJrqyajTqbKjbcBvkU3Fg4qXgVN_3']
-        };
+        if(req.body.image) {
+            const drive = google.drive({
+            version: 'v3',
+            auth: jwtClient
+            });
 
-        const media = {
-            mimeType: 'image/png',
-            body: Readable.from(Buffer.from(imageData, 'base64'))
-        };
+            // Base64-encoded image data
+            const base64Data = req.body.image;
 
-        drive.files.create({
-            resource: fileMetadata,
-            media: media,
-            fields: 'id'
-        }, (err, file) => {
-            if (err) {
-                console.error('Error uploading image', err);
-                res.status(500).send('Error uploading image');
-            } else {
-                console.log('Image uploaded with ID:', file.data.id);
-                res.send('Image uploaded successfully');
+            // Remove the data URI prefix and create a buffer from the base64-encoded data
+            const imageData = Buffer.from(base64Data.replace(/^data:image\/\w+;base64,/, ''), 'base64');
+            const imageBuffer = Buffer.from(imageData, 'base64');
+            const mimeType = `image/${getExtensionName(req.body.image)}`;
+
+            const fileMetadata = {
+                name: filename(req.body.image),
+                parents: ['1nv7HJrqyajTqbKjbcBvkU3Fg4qXgVN_3']
+            };
+
+            const media = {
+                mimeType: mimeType,
+                body: Readable.from(imageBuffer)
+            };
+
+            try {
+                drive.files.create({
+                    resource: fileMetadata,
+                    media: media,
+                    fields: 'id'
+                }, async (err, file) => {
+                    if (err) {
+                        console.error('Error uploading image', err);
+                        return res.status(409).json({ 
+                            variant: 'danger',
+                            message: "500: Error uploading image."
+                        });
+                    } else {
+                        const imagePath = `https://drive.google.com/uc?export=view&id=${file.data.id}`
+
+                        const hero = { image: imagePath, full_name: full_name, description: description, profession: profession, animation: animation }
+
+                        const newPortfolio = new Portfolio({ user: id, hero })
+
+                        if(!existing.portfolio_id){
+                            await newPortfolio.save().then(async (result) => {
+                                await Users.findByIdAndUpdate(id, {portfolio_id: result._id}, {new: true})
+                            });
+                
+                            let user = await Users.findById(id).populate('portfolio_id')
+                            return res.status(200).json({
+                                variant: 'success',
+                                alert: "Hero data successfully added!",
+                                result: user.portfolio_id
+                            });
+                        }
+                        else {             
+                            await Portfolio.findByIdAndUpdate(existing.portfolio_id, { ...hero, hero }, {new: true})
+                            .then(async (data) => {
+                                let user = await Users.findById(id).populate('portfolio_id')
+                                let fileID = existing.portfolio_id.hero.image.split('=').at(-1)
+
+                                try {
+                                    drive.files.delete({ 
+                                        fileId: fileID,
+                                        resource: {
+                                            parents: ['1nv7HJrqyajTqbKjbcBvkU3Fg4qXgVN_3']
+                                        }
+                                    }, (err, res) => {
+                                        if (err) {
+                                          console.error('Error deleting file', err);
+                                          return;
+                                        }
+                                      
+                                        console.log('File deleted successfully');
+                                    });
+                                }
+                                catch (err){
+                                    console.log(err)
+                                }
+
+                                return res.status(200).json({
+                                    variant: 'success',
+                                    alert: "Hero successfully updated!",
+                                    result: user.portfolio_id
+                                });
+                            })
+                        }
+                    }
+                });
             }
-        });
+            catch(error) {
+                return res.status(409).json({ 
+                    variant: 'danger',
+                    message: "409: there was a problem with the server."
+                });
+            }
+        }
+        else {
+            const hero = { full_name: full_name, description: description, profession: profession, animation: animation }
 
+            const newPortfolio = new Portfolio({ user: id, hero })
+
+            try {
+                if(!existing.portfolio_id){
+                    await newPortfolio.save().then(async (result) => {
+                        await Users.findByIdAndUpdate(id, {portfolio_id: result._id}, {new: true})
+                    });
+
+                    let user = await Users.findById(id).populate('portfolio_id')
+                    return res.status(200).json({
+                        variant: 'success',
+                        alert: "Hero data successfully added!",
+                        result: user.portfolio_id
+                    });
+                }
+                else {
+                    hero['image'] = existing.portfolio_id.hero.image
+
+                    await Portfolio.findByIdAndUpdate(existing.portfolio_id, { ...hero, hero }, {new: true})
+                    .then(async (data) => {
+                        let user = await Users.findById(id).populate('portfolio_id')
+                        return res.status(200).json({
+                            variant: 'success',
+                            alert: "Hero successfully updated!",
+                            result: user.portfolio_id
+                        });
+                    })
+                }
+            } catch (error) {
+                return res.status(409).json({ 
+                    variant: 'danger',
+                    message: "409: there was a problem with the server."
+                });
+            }
+        }
     });
     return
     const { id, full_name, description, profession, animation } = req.body
