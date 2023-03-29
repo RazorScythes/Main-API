@@ -14,18 +14,12 @@ const portfolioSchema = new Schema({
         animation: { type: Boolean }
     },
     skills: {
-        icons: {
-            icon1: { type: String },
-            icon2: { type: String },
-            icon3: { type: String }
-        },
+        image: { type: String },
+        icons: { type: Array },
         project_completed: { type: String },
         heading: { type: String },
         description: { type: String },
-        skill: {
-            percentage: { type: Number },
-            name: { type: String }
-        }
+        skill: { type: Array }
     },
     services: {
         heading: { type: String },
