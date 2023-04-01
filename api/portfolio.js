@@ -4,20 +4,45 @@ const router              = express.Router()
 
 const { uploadHero, getPortfolio, uploadSkills, uploadServices } = require('../controller/portfolio')
 
+// const allowCors = fn => async (req, res) => {
+//     res.setHeader('Access-Control-Allow-Credentials', true)
+//     res.setHeader('Access-Control-Allow-Origin', '*')
+//     // another common pattern
+//     // res.setHeader('Access-Control-Allow-Origin', req.headers.origin);
+//     res.setHeader('Access-Control-Allow-Methods', 'GET,OPTIONS,PATCH,DELETE,POST,PUT')
+//     res.setHeader(
+//       'Access-Control-Allow-Headers',
+//       'X-CSRF-Token, X-Requested-With, Accept, Accept-Version, Content-Length, Content-MD5, Content-Type, Date, X-Api-Version'
+//     )
+//     if (req.method === 'OPTIONS') {
+//       res.status(200).end()
+//       return
+//     }
+//     return await fn(req, res)
+// }
+
 const allowCors = fn => async (req, res) => {
     res.setHeader('Access-Control-Allow-Credentials', true)
     res.setHeader('Access-Control-Allow-Origin', '*')
-    // another common pattern
-    // res.setHeader('Access-Control-Allow-Origin', req.headers.origin);
     res.setHeader('Access-Control-Allow-Methods', 'GET,OPTIONS,PATCH,DELETE,POST,PUT')
-    res.setHeader(
-      'Access-Control-Allow-Headers',
-      'X-CSRF-Token, X-Requested-With, Accept, Accept-Version, Content-Length, Content-MD5, Content-Type, Date, X-Api-Version'
-    )
+    res.setHeader('Access-Control-Allow-Headers', 'X-CSRF-Token, X-Requested-With, Accept, Accept-Version, Content-Length, Content-MD5, Content-Type, Date, X-Api-Version')
+
+    // Allow the 'Content-Type' header for multipart/form-data requests
+    res.setHeader('Access-Control-Allow-Headers', 'Content-Type')
+
+    // Handle preflight requests
     if (req.method === 'OPTIONS') {
       res.status(200).end()
       return
     }
+
+    // Allow large file uploads
+    const contentType = req.headers['content-type']
+    if (contentType && contentType.startsWith('multipart/form-data')) {
+      req.connection.setTimeout(0)
+      req.socket.setTimeout(0)
+    }
+
     return await fn(req, res)
 }
 
