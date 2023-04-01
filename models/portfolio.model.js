@@ -21,14 +21,7 @@ const portfolioSchema = new Schema({
         description: { type: String },
         skill: { type: Array }
     },
-    services: {
-        heading: { type: String },
-        description: { type: String },
-        service: {
-            name: { type: String },
-            type_of_service: { type: Array },
-        }
-    },
+    services: { type: Array },
     experience: {
         year_start: { type: String },
         year_end: { type: String },

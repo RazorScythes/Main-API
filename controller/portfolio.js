@@ -243,7 +243,7 @@ function uploadSingleIcons(base64, delete_id){
     })
 }
 
-function deleteSingleIcons (delete_id) {
+function deleteSingleIcons (delete_id, folder) {
     return new Promise(async (resolve, reject) => {
         const drive = google.drive({
             version: 'v3',
@@ -255,7 +255,7 @@ function deleteSingleIcons (delete_id) {
             drive.files.delete({ 
                 fileId: fileID,
                 resource: {
-                    parents: ['1GdrQDlW5rkUREbsHZF71cuAp3wPLv-BT']
+                    parents: [folder]
                 }
             }, (err) => {
                 if (err) {
@@ -333,7 +333,7 @@ exports.uploadSkills = async (req, res) => {
                             Promise.all(icon_id)
                                 .then(async (newImageID) => {
                                     removed_icons.forEach((item) => {
-                                        icon_removed_id.push(deleteSingleIcons(item))
+                                        icon_removed_id.push(deleteSingleIcons(item, '1GdrQDlW5rkUREbsHZF71cuAp3wPLv-BT'))
                                     })
 
                                     Promise.all(icon_removed_id)
@@ -416,7 +416,7 @@ exports.uploadSkills = async (req, res) => {
                             let icon_removed_id = []
 
                             existing.portfolio_id.skills.icons.forEach((item) => {
-                                icon_removed_id.push(deleteSingleIcons(item))
+                                icon_removed_id.push(deleteSingleIcons(item, '1GdrQDlW5rkUREbsHZF71cuAp3wPLv-BT'))
                             })
 
                             Promise.all(icon_removed_id)
@@ -506,7 +506,7 @@ exports.uploadSkills = async (req, res) => {
                 Promise.all(icon_id)
                     .then(async (newImageID) => {
                         removed_icons.forEach((item) => {
-                            icon_removed_id.push(deleteSingleIcons(item))
+                            icon_removed_id.push(deleteSingleIcons(item, '1GdrQDlW5rkUREbsHZF71cuAp3wPLv-BT'))
                         })
 
                         Promise.all(icon_removed_id)
@@ -565,7 +565,7 @@ exports.uploadSkills = async (req, res) => {
                 let icon_removed_id = []
 
                 existing.portfolio_id.skills.icons.forEach((item) => {
-                    icon_removed_id.push(deleteSingleIcons(item))
+                    icon_removed_id.push(deleteSingleIcons(item, '1GdrQDlW5rkUREbsHZF71cuAp3wPLv-BT'))
                 })
 
                 Promise.all(icon_removed_id)
@@ -614,4 +614,190 @@ exports.uploadSkills = async (req, res) => {
             }
         }
     });
+}
+
+
+function uploadImagesByNested(base64, index, sub_index, gallery_index){
+
+    if(base64.includes('https://drive.google.com')) {
+        return  gallery_index !== undefined ? 
+            {
+                image: base64,
+                index: index,
+                sub_index: sub_index,
+                gallery_index: gallery_index
+            }
+            :
+            {
+                image: base64,
+                index: index,
+                sub_index: sub_index
+            }
+    }   
+
+    return new Promise(async (resolve, reject) => {
+        const drive = google.drive({
+            version: 'v3',
+            auth: jwtClient
+        }); 
+
+        // Base64-encoded image data
+        const base64Data = base64;
+
+        // Remove the data URI prefix and create a buffer from the base64-encoded data
+        const imageData = Buffer.from(base64Data.replace(/^data:image\/\w+;base64,/, ''), 'base64');
+        const imageBuffer = Buffer.from(imageData, 'base64');
+        const mimeType = `image/${getExtensionName(base64)}`;
+
+        const fileMetadata = {
+            name: filename(base64),
+            parents: ['1kT3dkKXi21HKhGc7sMlcgU9N3rq86puq']
+        };
+
+        const media = {
+            mimeType: mimeType,
+            body: Readable.from(imageBuffer)
+        };
+
+        try {
+            drive.files.create({
+                resource: fileMetadata,
+                media: media,
+                fields: 'id'
+            }, async (err, file) => {
+                if (err) {
+                    console.error('Error uploading image', err.errors);
+                    return gallery_index  !== undefined ? 
+                        {
+                            image: base64,
+                            index: index,
+                            sub_index: sub_index,
+                            gallery_index: gallery_index
+                        }
+                        :
+                        {
+                            image: base64,
+                            index: index,
+                            sub_index: sub_index
+                        }
+                } else {
+                    if (err) {
+                        console.log(err)
+                        reject(err);
+                    } else {
+                        console.log("FILE ADDED", file.data.id)
+                        if(gallery_index !== undefined)
+                            resolve({
+                                image: `https://drive.google.com/uc?export=view&id=${file.data.id}`,
+                                index: index,
+                                sub_index: sub_index,
+                                gallery_index: gallery_index
+                            })
+                        else 
+                            resolve({
+                                image: `https://drive.google.com/uc?export=view&id=${file.data.id}`,
+                                index: index,
+                                sub_index: sub_index,
+                            });
+                    }
+                }
+            });
+        }
+        catch(error) {
+            console.log(err)
+            reject(error);
+        }
+    })
+}
+
+exports.uploadServices = async (req, res) => {
+
+    const { id, data, removeImage } = req.body
+    let existing = await Users.findById(id).populate('portfolio_id')
+
+    let icon_removed_id = []
+
+    removeImage.forEach((item) => {
+        icon_removed_id.push(deleteSingleIcons(item, '1kT3dkKXi21HKhGc7sMlcgU9N3rq86puq'))
+    })
+
+    Promise.all(icon_removed_id)
+        .then(async () => {
+            let featured_arr = []
+            data.forEach((item, i) => {
+                item.type_of_service.forEach((data, x) => {
+                    featured_arr.push(uploadImagesByNested(data.featured_image, i, x))
+                })
+            })
+        
+            Promise.all(featured_arr)
+                .then(async (featured_result) => {
+        
+                    let gallery_arr = []
+            
+                    data.forEach((item, i) => {
+                        item.type_of_service.forEach((data, x) => {
+                            data.gallery.map((image, y) => {
+                                gallery_arr.push(uploadImagesByNested(image, i, x, y))
+                            })
+                        })
+                    })
+        
+                    Promise.all(gallery_arr)
+                        .then(async (result) => {
+        
+                            featured_result.forEach((item) => {
+                                data[item.index].type_of_service[item.sub_index].featured_image = item.image
+                            })
+        
+                            result.forEach((item) => {
+                                data[item.index].type_of_service[item.sub_index].gallery[item.gallery_index] = item.image
+                            })
+        
+                            const services = data
+        
+                            try {
+                                if(!existing.portfolio_id){
+                                    await req.body.save().then(async (result) => {
+                                        await Users.findByIdAndUpdate(id, {portfolio_id: result._id}, {new: true})
+                                    });
+                
+                                    let user = await Users.findById(id).populate('portfolio_id')
+                                    return res.status(200).json({
+                                        variant: 'success',
+                                        alert: "Services data successfully added!",
+                                        result: user.portfolio_id
+                                    });
+                                }
+                                else {
+                                    await Portfolio.findByIdAndUpdate(existing.portfolio_id, {...services, services}, {new: true})
+                                    .then(async (data) => {
+                                        let user = await Users.findById(id).populate('portfolio_id')
+                                        return res.status(200).json({
+                                            variant: 'success',
+                                            alert: "Services successfully updated!",
+                                            result: user.portfolio_id
+                                        });
+                                    })
+                                }
+                            } catch (error) {
+                                console.log(error)
+                                return res.status(409).json({ 
+                                    variant: 'danger',
+                                    message: "409: there was a problem with the server."
+                                });
+                            }
+        
+                        })
+                        .catch((e) => {
+                            console.log(e)
+                        });
+                })
+                .catch((e) => {
+                    console.log(e)
+                });
+        })
+        .catch((e) => {
+            console.log(e)
+        });
 }
