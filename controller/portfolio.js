@@ -186,7 +186,7 @@ exports.uploadHero = async (req, res) => {
     });
 }
 
-function uploadSingleIcons(base64, delete_id){
+function uploadSingleImage(base64, folder){
     if(base64.includes('https://drive.google.com')) {
         console.log(base64)
         return base64.split('=').at(-1);
@@ -208,7 +208,7 @@ function uploadSingleIcons(base64, delete_id){
 
         const fileMetadata = {
             name: filename(base64),
-            parents: ['1GdrQDlW5rkUREbsHZF71cuAp3wPLv-BT']
+            parents: [folder]
         };
 
         const media = {
@@ -243,7 +243,7 @@ function uploadSingleIcons(base64, delete_id){
     })
 }
 
-function deleteSingleIcons (delete_id, folder) {
+function deleteSingleImage (delete_id, folder) {
     return new Promise(async (resolve, reject) => {
         const drive = google.drive({
             version: 'v3',
@@ -327,13 +327,13 @@ exports.uploadSkills = async (req, res) => {
                         if(icons.length > 0){
 
                             icons.forEach((icon) => {
-                                icon_id.push(uploadSingleIcons(icon))
+                                icon_id.push(uploadSingleImage(icon, '1GdrQDlW5rkUREbsHZF71cuAp3wPLv-BT'))
                             })
 
                             Promise.all(icon_id)
                                 .then(async (newImageID) => {
                                     removed_icons.forEach((item) => {
-                                        icon_removed_id.push(deleteSingleIcons(item, '1GdrQDlW5rkUREbsHZF71cuAp3wPLv-BT'))
+                                        icon_removed_id.push(deleteSingleImage(item, '1GdrQDlW5rkUREbsHZF71cuAp3wPLv-BT'))
                                     })
 
                                     Promise.all(icon_removed_id)
@@ -416,7 +416,7 @@ exports.uploadSkills = async (req, res) => {
                             let icon_removed_id = []
 
                             existing.portfolio_id.skills.icons.forEach((item) => {
-                                icon_removed_id.push(deleteSingleIcons(item, '1GdrQDlW5rkUREbsHZF71cuAp3wPLv-BT'))
+                                icon_removed_id.push(deleteSingleImage(item, '1GdrQDlW5rkUREbsHZF71cuAp3wPLv-BT'))
                             })
 
                             Promise.all(icon_removed_id)
@@ -500,13 +500,13 @@ exports.uploadSkills = async (req, res) => {
             if(icons.length > 0){
 
                 icons.forEach((icon) => {
-                    icon_id.push(uploadSingleIcons(icon))
+                    icon_id.push(uploadSingleImage(icon, '1GdrQDlW5rkUREbsHZF71cuAp3wPLv-BT'))
                 })
 
                 Promise.all(icon_id)
                     .then(async (newImageID) => {
                         removed_icons.forEach((item) => {
-                            icon_removed_id.push(deleteSingleIcons(item, '1GdrQDlW5rkUREbsHZF71cuAp3wPLv-BT'))
+                            icon_removed_id.push(deleteSingleImage(item, '1GdrQDlW5rkUREbsHZF71cuAp3wPLv-BT'))
                         })
 
                         Promise.all(icon_removed_id)
@@ -565,7 +565,7 @@ exports.uploadSkills = async (req, res) => {
                 let icon_removed_id = []
 
                 existing.portfolio_id.skills.icons.forEach((item) => {
-                    icon_removed_id.push(deleteSingleIcons(item, '1GdrQDlW5rkUREbsHZF71cuAp3wPLv-BT'))
+                    icon_removed_id.push(deleteSingleImage(item, '1GdrQDlW5rkUREbsHZF71cuAp3wPLv-BT'))
                 })
 
                 Promise.all(icon_removed_id)
@@ -718,7 +718,7 @@ exports.uploadServices = async (req, res) => {
     let icon_removed_id = []
 
     removeImage.forEach((item) => {
-        icon_removed_id.push(deleteSingleIcons(item, '1kT3dkKXi21HKhGc7sMlcgU9N3rq86puq'))
+        icon_removed_id.push(deleteSingleImage(item, '1kT3dkKXi21HKhGc7sMlcgU9N3rq86puq'))
     })
 
     Promise.all(icon_removed_id)
@@ -796,6 +796,114 @@ exports.uploadServices = async (req, res) => {
                 .catch((e) => {
                     console.log(e)
                 });
+        })
+        .catch((e) => {
+            console.log(e)
+        });
+}
+
+exports.addExperience = async (req, res) => {
+    const { id, image_overlay, company_logo, year_start, year_end, position, company_location, remote_work, duties } = req.body
+
+    jwtClient.authorize(async (err, tokens) => {
+
+        let existing = await Users.findById(req.body.id).populate('portfolio_id')
+
+        uploadSingleImage(image_overlay, '1rzx99eP0r2lUSZdOP0aQnEC3-ml0mCOw')
+            .then((overlay_id) => {
+                req.body.image_overlay = `https://drive.google.com/uc?export=view&id=${overlay_id}`
+
+                uploadSingleImage(company_logo, '1UDgS6AsmxQQbIgkOZXEbflrTg2bHX9NB')
+                    .then(async (logo_id) => {
+                        req.body.company_logo = `https://drive.google.com/uc?export=view&id=${logo_id}`
+
+                        const experience = req.body
+
+                        const newPortfolio = new Portfolio({ user: id, experience })
+
+                        try{
+                            if(!existing.portfolio_id){
+                                await newPortfolio.save().then(async (result) => {
+                                    await Users.findByIdAndUpdate(id, {portfolio_id: result._id}, {new: true})
+                                });
+                    
+                                let user = await Users.findById(id).populate('portfolio_id')
+                                return res.status(200).json({
+                                    variant: 'success',
+                                    alert: "Experience data successfully added!",
+                                    result: user.portfolio_id
+                                });
+                            }
+                            else {             
+                                await Portfolio.findByIdAndUpdate(existing.portfolio_id, 
+                                    { $push: { experience: experience } },
+                                    { new: true, useFindAndModify: false })
+                                .then(async (data) => {
+                                    let user = await Users.findById(id).populate('portfolio_id')
+    
+                                    return res.status(200).json({
+                                        variant: 'success',
+                                        alert: "Experience successfully updated!",
+                                        result: user.portfolio_id
+                                    });
+                                })
+                            }
+                        }
+                        catch(err){
+                            console.log(err)
+                        }
+                    })
+                    .catch((err) => {
+                        return res.status(409).json({ 
+                            variant: 'danger',
+                            message: "500: Error uploading images."
+                        });
+                    })
+            })
+            .catch((err) => {
+                return res.status(409).json({ 
+                    variant: 'danger',
+                    message: "500: Error uploading images."
+                });
+            })
+    });
+    return
+}
+
+exports.updateExperience = async (req, res) => {
+    const { id, data, removeImage } = req.body
+
+    let existing = await Users.findById(id).populate('portfolio_id')
+
+    let removed_id = []
+
+    removeImage.forEach((item) => {
+        removed_id.push(deleteSingleImage(item, '1GdrQDlW5rkUREbsHZF71cuAp3wPLv-BT'))
+    })
+
+    Promise.all(removed_id)
+        .then(async () => {
+
+            const experience = data
+
+            try {
+                await Portfolio.findByIdAndUpdate(existing.portfolio_id, {...experience, experience}, {new: true})
+                .then(async (data) => {
+                    let user = await Users.findById(id).populate('portfolio_id')
+                    return res.status(200).json({
+                        variant: 'success',
+                        alert: "Experience successfully updated!",
+                        result: user.portfolio_id
+                    });
+                })
+            } catch (error) {
+                console.log(error)
+                return res.status(409).json({ 
+                    variant: 'danger',
+                    message: "409: there was a problem with the server."
+                });
+            }
+
         })
         .catch((e) => {
             console.log(e)

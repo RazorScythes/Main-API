@@ -2,6 +2,7 @@ const mongoose      = require('mongoose')
 const Schema        = mongoose.Schema
 
 const portfolioSchema = new Schema({
+    published: { type: Boolean },
     user: {
         type: Schema.Types.ObjectId,
         ref: 'User'
@@ -22,14 +23,7 @@ const portfolioSchema = new Schema({
         skill: { type: Array }
     },
     services: { type: Array },
-    experience: {
-        year_start: { type: String },
-        year_end: { type: String },
-        company_logo: { type: String },
-        company_name: { type: String },
-        company_website: { type: String },
-        position: { type: String }
-    },
+    experience: { type: Array },
     projects: {
         showcase: {
             image: { type: String },
