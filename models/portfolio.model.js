@@ -24,15 +24,10 @@ const portfolioSchema = new Schema({
     },
     services: { type: Array },
     experience: { type: Array },
-    projects: {
-        showcase: {
-            image: { type: String },
-            project_name: { type: String },
-            category: { type: String }
-        },
-        description: { type: String },
-        gallery: { type: Array },
-        website_link: { type: String }
+    projects: { type: Array },
+    contact: {
+        email: { type: String },
+        subject: { type: Array }
     }
 },{
     timestamps: true,

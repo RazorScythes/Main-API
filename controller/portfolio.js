@@ -12,6 +12,7 @@ const image_folder = 'portfolio_hero_image'
 require('dotenv').config()
 
 const key = require('../service-account-key-file.json');
+const { encodeBase64 } = require('bcryptjs');
 
 const jwtClient = new google.auth.JWT(
     key.client_email,
@@ -904,6 +905,204 @@ exports.updateExperience = async (req, res) => {
                 });
             }
 
+        })
+        .catch((e) => {
+            console.log(e)
+        });
+}
+
+exports.addProject = async (req, res) => {
+    const { id, image } = req.body
+
+    let existing = await Users.findById(req.body.id).populate('portfolio_id')
+
+    uploadSingleImage(image, '1QJSZ0tnMtUqE3f6EwaSbnAs1h7zjzk1J')
+        .then(async (image_id) => {
+
+            req.body.image = `https://drive.google.com/uc?export=view&id=${image_id}`
+
+            const projects = req.body
+
+            const newPortfolio = new Portfolio({ user: id, projects })
+
+            try{
+                if(!existing.portfolio_id){
+                    await newPortfolio.save().then(async (result) => {
+                        await Users.findByIdAndUpdate(id, {portfolio_id: result._id}, {new: true})
+                    });
+        
+                    let user = await Users.findById(id).populate('portfolio_id')
+                    return res.status(200).json({
+                        variant: 'success',
+                        alert: "Experience data successfully added!",
+                        result: user.portfolio_id
+                    });
+                }
+                else {             
+                    await Portfolio.findByIdAndUpdate(existing.portfolio_id, 
+                        { $push: { projects: projects } },
+                        { new: true, useFindAndModify: false })
+                    .then(async () => {
+                        let user = await Users.findById(id).populate('portfolio_id')
+
+                        return res.status(200).json({
+                            variant: 'success',
+                            alert: "Experience successfully updated!",
+                            result: user.portfolio_id
+                        });
+                    })
+                }
+            }
+            catch(err){
+                console.log(err)
+            }
+        })
+        .catch((err) => {
+            return res.status(409).json({ 
+                variant: 'danger',
+                message: "500: Error uploading images."
+            });
+        })
+
+}
+
+function uploadImageByIndex(base64, index, folder){
+    if(base64.includes('https://drive.google.com')) {
+        console.log(base64)
+        return {
+            image: base64,
+            index: index
+        }
+    }   
+
+    return new Promise(async (resolve, reject) => {
+        const drive = google.drive({
+            version: 'v3',
+            auth: jwtClient
+        }); 
+
+        // Base64-encoded image data
+        const base64Data = base64;
+
+        // Remove the data URI prefix and create a buffer from the base64-encoded data
+        const imageData = Buffer.from(base64Data.replace(/^data:image\/\w+;base64,/, ''), 'base64');
+        const imageBuffer = Buffer.from(imageData, 'base64');
+        const mimeType = `image/${getExtensionName(base64)}`;
+
+        const fileMetadata = {
+            name: filename(base64),
+            parents: [folder]
+        };
+
+        const media = {
+            mimeType: mimeType,
+            body: Readable.from(imageBuffer)
+        };
+
+        try {
+            drive.files.create({
+                resource: fileMetadata,
+                media: media,
+                fields: 'id'
+            }, async (err, file) => {
+                if (err) {
+                    console.error('Error uploading image', err.errors);
+                    return {
+                        image: base64,
+                        index: index
+                    }
+                } else {
+                    if (err) {
+                        console.log(err)
+                        reject(err);
+                    } else {
+                        console.log("FILE ADDED", file.data.id)
+                        resolve({
+                            image: `https://drive.google.com/uc?export=view&id=${file.data.id}`,
+                            index: index
+                        });
+                    }
+                }
+            });
+        }
+        catch(error) {
+            console.log(err)
+            reject(error);
+        }
+    })
+}
+
+exports.updateProject = async (req, res) => {
+    const { data, id, removeImage } = req.body
+
+    let existing = await Users.findById(id).populate('portfolio_id')
+
+    let removed_id = []
+
+    removeImage.forEach((item) => {
+        removed_id.push(deleteSingleImage(item, '1QJSZ0tnMtUqE3f6EwaSbnAs1h7zjzk1J'))
+    })
+
+    Promise.all(removed_id)
+        .then(async () => {
+            let featured_arr = []
+
+            data.forEach((item, i) => {
+                featured_arr.push(uploadImageByIndex(item.image, i, '1QJSZ0tnMtUqE3f6EwaSbnAs1h7zjzk1J'))
+            })
+
+            Promise.all(featured_arr)
+                .then(async (featured_result) => {
+                    featured_result.forEach((item) => {
+                        data[item.index].image = item.image
+                    })
+
+                    let projects = data
+
+                    await Portfolio.findByIdAndUpdate(existing.portfolio_id, {...projects, projects}, {new: true})
+                        .then(async () => {
+                            let user = await Users.findById(id).populate('portfolio_id')
+                            return res.status(200).json({
+                                variant: 'success',
+                                alert: "Project successfully updated!",
+                                result: user.portfolio_id
+                            });
+                        })
+                })
+                .catch((e) => {
+                    console.log(e)
+                });
+        })
+        .catch((e) => {
+            console.log(e)
+        });
+}
+
+exports.deleteProject = async (req, res) => {
+    const { data, id, removeImage } = req.body
+
+    let existing = await Users.findById(id).populate('portfolio_id')
+
+    let removed_id = []
+
+    removeImage.forEach((item) => {
+        removed_id.push(deleteSingleImage(item, '1QJSZ0tnMtUqE3f6EwaSbnAs1h7zjzk1J'))
+    })
+
+    Promise.all(removed_id)
+        .then(async () => {
+            
+            let projects = data
+
+            await Portfolio.findByIdAndUpdate(existing.portfolio_id, {...projects, projects}, {new: true})
+                .then(async () => {
+                    let user = await Users.findById(id).populate('portfolio_id')
+                    return res.status(200).json({
+                        variant: 'success',
+                        alert: "Project successfully updated!",
+                        result: user.portfolio_id
+                    });
+                })
         })
         .catch((e) => {
             console.log(e)

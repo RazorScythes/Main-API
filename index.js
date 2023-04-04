@@ -56,7 +56,10 @@ app.use(express.urlencoded({
 }))
 
 const handleGet = (req, res) => {
-    res.send('This is a GET request');
+    res.send(`
+        This is a GET request
+        ${process.env.HANDLE_VALUE}
+    `);
 };
 
 app.get("/", handleGet)
