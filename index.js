@@ -11,7 +11,7 @@ const bcrypt                    = require("bcryptjs")
 const auth_router                       = require('./api/auth')
 const portfolio_router                  = require('./api/portfolio')
 
-require('dotenv').config()
+// require('dotenv').config()
 
 // if(process.env.DEVELOPMENT){
 //    const { initFolders }       = require('./folder')
@@ -22,7 +22,7 @@ require('dotenv').config()
 // }
 
 const app = express()
-const port = process.env.PORT || 3000
+const port = 3000
 
 const db = mongoose.connection
 
