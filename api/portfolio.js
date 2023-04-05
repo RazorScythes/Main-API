@@ -2,7 +2,7 @@ const multer            = require('multer')
 const express             = require('express')
 const router              = express.Router()
 
-const { uploadHero, getPortfolio, uploadSkills, uploadServices, addExperience, updateExperience, addProject, updateProject, deleteProject } = require('../controller/portfolio')
+const { publishPortfolio, unpublishPortfolio, uploadHero, getPortfolio, getPortfolioByUsername, uploadSkills, uploadServices, addExperience, updateExperience, addProject, updateProject, deleteProject, sendTestEmail, uploadContacts } = require('../controller/portfolio')
 
 const allowCors = fn => async (req, res) => {
     res.setHeader('Access-Control-Allow-Credentials', true)
@@ -21,7 +21,10 @@ const allowCors = fn => async (req, res) => {
     return await fn(req, res)
 }
 
+router.post('/publishPortfolio', allowCors(publishPortfolio))
+router.post('/unpublishPortfolio', allowCors(unpublishPortfolio))
 router.post('/getPortfolio', allowCors(getPortfolio))
+router.post('/getPortfolioByUsername', allowCors(getPortfolioByUsername))
 router.post('/hero', allowCors(uploadHero))
 router.post('/skills', allowCors(uploadSkills))
 router.post('/services', allowCors(uploadServices))
@@ -30,5 +33,7 @@ router.post('/updateExperience', allowCors(updateExperience))
 router.post('/addProject', allowCors(addProject))
 router.post('/updateProject', allowCors(updateProject))
 router.post('/deleteProject', allowCors(deleteProject))
+router.post('/uploadContacts', allowCors(uploadContacts))
+router.post('/testEmail', allowCors(sendTestEmail))
 
 module.exports = router 

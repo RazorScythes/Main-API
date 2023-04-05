@@ -3,16 +3,11 @@ const Portfolio             = require('../models/portfolio.model')
 const path                  = require('path')
 const ba64                  = require("ba64")
 const uuid                  = require('uuid');
-const fs                    = require('fs');
+const nodemailer            = require('nodemailer');
 const { google }            = require('googleapis');
 const { Readable }          =  require('stream')
 
-const image_folder = 'portfolio_hero_image'
-
-require('dotenv').config()
-
 const key = require('../service-account-key-file.json');
-const { encodeBase64 } = require('bcryptjs');
 
 const jwtClient = new google.auth.JWT(
     key.client_email,
@@ -22,12 +17,99 @@ const jwtClient = new google.auth.JWT(
     null
 );
 
+// create reusable transporter object using the default SMTP transport
+let transporter = nodemailer.createTransport({
+    service: 'gmail',
+    auth: {
+        user: process.env.EMAIL,
+        pass: process.env.PASSWORD
+    }
+});
+
 function filename(base64String){
     return (uuid.v4() + path.extname(getExtensionName(base64String)))
 }
 
 function getExtensionName(base64String){
     return base64String.substring("data:image/".length, base64String.indexOf(";base64"))
+}
+
+exports.publishPortfolio = async (req, res) => {
+    const { id } = req.body
+
+    let existing = await Users.findById(req.body.id).populate('portfolio_id')
+    
+    if(!existing.portfolio_id){
+        let newPortfolio = { published: true }
+
+        await newPortfolio.save().then(async (result) => {
+            await Users.findByIdAndUpdate(id, {portfolio_id: result._id}, {new: true})
+        });
+
+        let user = await Users.findById(id).populate('portfolio_id')
+        return res.status(200).json({
+            variant: 'success',
+            alert: "Hero data successfully added!",
+            result: user.portfolio_id
+        });
+    }
+    else {    
+        let portfolio = existing.portfolio_id
+        if(!portfolio.published) portfolio['published'] = true
+        else portfolio.published = true
+
+        await Portfolio.findByIdAndUpdate(existing.portfolio_id, { ...portfolio, portfolio }, {new: true})
+            .then(async () => {
+                let user = await Users.findById(id).populate('portfolio_id')
+                return res.status(200).json({
+                    result: user.portfolio_id
+                });
+            })         
+    }
+}
+
+exports.unpublishPortfolio = async (req, res) => {
+    const { id } = req.body
+
+    let existing = await Users.findById(req.body.id).populate('portfolio_id')
+    
+    if(!existing.portfolio_id){
+        let newPortfolio = { published: false }
+
+        await newPortfolio.save().then(async (result) => {
+            await Users.findByIdAndUpdate(id, {portfolio_id: result._id}, {new: true})
+        });
+
+        let user = await Users.findById(id).populate('portfolio_id')
+        return res.status(200).json({
+            variant: 'success',
+            alert: "Hero data successfully added!",
+            result: user.portfolio_id
+        });
+    }
+    else {    
+        let portfolio = existing.portfolio_id
+        if(!portfolio.published) portfolio['published'] = false
+        else portfolio.published = false
+
+        await Portfolio.findByIdAndUpdate(existing.portfolio_id, { ...portfolio, portfolio }, {new: true})
+            .then(async () => {
+                let user = await Users.findById(id).populate('portfolio_id')
+                return res.status(200).json({
+                    result: user.portfolio_id
+                });
+            })         
+    }
+}
+
+exports.getPortfolioByUsername = async (req, res) => {
+    const { username } = req.body
+    await Users.findOne({username: username}).populate('portfolio_id')
+        .then(user => res.status(200).json({ 
+            result: user.portfolio_id,
+            published: user.portfolio_id.published
+        }))
+        .catch(err => res.status(404).json({ variant: 'danger', message: err }))
 }
 
 exports.getPortfolio = async (req, res) => {
@@ -1107,4 +1189,82 @@ exports.deleteProject = async (req, res) => {
         .catch((e) => {
             console.log(e)
         });
+}
+
+function isEmail(text) {
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return emailRegex.test(text);
+}
+
+exports.sendTestEmail = async (req, res) => {
+    const { email } = req.body
+
+    if(!isEmail(email))
+        return res.status(409).json({ 
+            variant: 'danger',
+            message: 'Error: Invalid email address.'
+        });
+    // send mail with defined transport object
+    let mailOptions = {
+        from: 'antei.automailer@gmail.com', // sender address
+        to: email, // list of receivers
+        subject: 'Test Email', // Subject line
+        text: 'This is a test email to see if the email successfully sent to the reciever' // plain text body
+    };
+
+    transporter.sendMail(mailOptions, (error, info) => {
+        if (error) {
+            return res.status(409).json({ 
+                variant: 'danger',
+                message: 'Error: there was a problem with the email. Please try again.'
+            });
+        } else {
+            return res.status(200).json({
+                variant: 'success',
+                alert: "Email sent successfully, please check your inbox",
+            });
+        }
+    });
+}
+
+exports.uploadContacts = async (req, res) => {
+    const { email, id, subject} = req.body
+
+    let existing = await Users.findById(req.body.id).populate('portfolio_id')
+
+    const contact = { email: email, subject: subject }
+
+    const newPortfolio = new Portfolio({ user: id, contact })
+
+    try {
+        if(!existing.portfolio_id){
+            await newPortfolio.save().then(async (result) => {
+                await Users.findByIdAndUpdate(id, {portfolio_id: result._id}, {new: true})
+            });
+
+            let user = await Users.findById(id).populate('portfolio_id')
+            return res.status(200).json({
+                variant: 'success',
+                alert: "Contact data successfully added!",
+                result: user.portfolio_id
+            });
+        }
+        else {
+
+            await Portfolio.findByIdAndUpdate(existing.portfolio_id, { ...contact, contact }, {new: true})
+            .then(async () => {
+                let user = await Users.findById(id).populate('portfolio_id')
+                return res.status(200).json({
+                    variant: 'success',
+                    alert: "Contact successfully updated!",
+                    result: user.portfolio_id
+                });
+            })
+        }
+    } catch (error) {
+        return res.status(409).json({ 
+            variant: 'danger',
+            message: "409: there was a problem with the server."
+        });
+    }
 }
