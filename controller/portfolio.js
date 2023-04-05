@@ -17,6 +17,14 @@ const jwtClient = new google.auth.JWT(
 );
 
 // create reusable transporter object using the default SMTP transport
+// let transporter = nodemailer.createTransport({
+//     service: 'gmail',
+//     auth: {
+//         user: 'zantei.automailer@gmail.com',
+//         pass: 'oceuixdtqvbjcivd'
+//     }
+// });
+
 let transporter = nodemailer.createTransport({
     service: 'gmail',
     auth: {
@@ -99,6 +107,33 @@ exports.unpublishPortfolio = async (req, res) => {
                 });
             })         
     }
+}
+
+exports.getProject = async (req, res) => {
+    
+    const { username, project_name } = req.body
+
+    let result = {}
+
+    let user = await Users.findOne({username: username}).populate('portfolio_id')
+
+    if(!user) return res.status(404).json({ variant: 'danger', message: "project not found" })
+
+    if(user.portfolio_id && user.portfolio_id.projects.length > 0)
+        user.portfolio_id.projects.some((item) => {
+            if(item.project_name.toLowerCase() === project_name.split('_').join(" ").toLowerCase()){
+                result = item
+                return true
+            }
+        })
+    
+    if(Object.keys(result).length === 0) 
+        return res.status(404).json({ variant: 'danger', message: "project not found" })
+
+    res.status(200).json({ 
+        result: result,
+        published: user.portfolio_id.published
+    })
 }
 
 exports.getPortfolioByUsername = async (req, res) => {
@@ -1195,6 +1230,45 @@ function isEmail(text) {
     return emailRegex.test(text);
 }
 
+exports.sendEmail = async (req, res) => {
+    const { name, email, sender_email, phone, subject, message } = req.body
+
+    if(!isEmail(sender_email))
+        return res.status(409).json({ 
+            mailStatus: 'Invalid Email Address'
+        });
+
+    let reciever = ''
+    if(email) reciever = email
+    else reciever = 'razorscythe25@gmail.com'
+
+    let mailOptions = {
+        from: 'zantei.automailer@gmail.com', // sender address
+        to: reciever, // list of receivers
+        subject: subject[0], // Subject line
+        text: `
+            Someone fill up your form on your portfolio pages. Here are the information
+            Name: ${name}
+            Email: ${sender_email}
+            Phone: ${phone ? phone : 'n/a'}
+            Message: ${message}
+        `
+    };
+
+    transporter.sendMail(mailOptions, (error, info) => {
+        if (error) {
+            return res.status(409).json({ 
+                mailStatus: 'There was a problem sending messages, Please try again'
+            });
+        } else {
+            return res.status(200).json({
+                mailStatus: 'Message has been sent successfully!'
+            });
+        }
+    });
+
+}
+
 exports.sendTestEmail = async (req, res) => {
     const { email } = req.body
 
@@ -1205,7 +1279,7 @@ exports.sendTestEmail = async (req, res) => {
         });
     // send mail with defined transport object
     let mailOptions = {
-        from: 'antei.automailer@gmail.com', // sender address
+        from: 'zantei.automailer@gmail.com', // sender address
         to: email, // list of receivers
         subject: 'Test Email', // Subject line
         text: 'This is a test email to see if the email successfully sent to the reciever' // plain text body
