@@ -1050,7 +1050,7 @@ exports.addProject = async (req, res) => {
                     let user = await Users.findById(id).populate('portfolio_id')
                     return res.status(200).json({
                         variant: 'success',
-                        alert: "Experience data successfully added!",
+                        alert: "Project data successfully added!",
                         result: user.portfolio_id
                     });
                 }
@@ -1063,7 +1063,7 @@ exports.addProject = async (req, res) => {
 
                         return res.status(200).json({
                             variant: 'success',
-                            alert: "Experience successfully updated!",
+                            alert: "Project successfully updated!",
                             result: user.portfolio_id
                         });
                     })
