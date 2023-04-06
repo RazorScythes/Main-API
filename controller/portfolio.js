@@ -1230,6 +1230,35 @@ function isEmail(text) {
     return emailRegex.test(text);
 }
 
+exports.sendContactUs = async (req, res) => {
+    const { name, email, message } = req.body
+
+    let mailOptions = {
+        from: 'zantei.automailer@gmail.com', // sender address
+        to: 'jamezarviemaderas@gmail.com', // list of receivers
+        subject: "Contact Us Form", // Subject line
+        text: `
+            Someone fill up your contact form. Here are the information
+            Name: ${name}
+            Email: ${email}
+            Message: ${message}
+        `
+    };
+
+    transporter.sendMail(mailOptions, (error, info) => {
+        if (error) {
+            return res.status(409).json({ 
+                mailStatus: 'There was a problem sending messages, Please try again'
+            });
+        } else {
+            return res.status(200).json({
+                mailStatus: 'Message has been sent successfully!'
+            });
+        }
+    });
+
+}
+
 exports.sendEmail = async (req, res) => {
     const { name, email, sender_email, phone, subject, message } = req.body
 

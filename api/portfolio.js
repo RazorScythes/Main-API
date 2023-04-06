@@ -2,7 +2,7 @@ const multer            = require('multer')
 const express             = require('express')
 const router              = express.Router()
 
-const { publishPortfolio, sendEmail, getProject, unpublishPortfolio, uploadHero, getPortfolio, getPortfolioByUsername, uploadSkills, uploadServices, addExperience, updateExperience, addProject, updateProject, deleteProject, sendTestEmail, uploadContacts } = require('../controller/portfolio')
+const { publishPortfolio, sendEmail, sendContactUs, getProject, unpublishPortfolio, uploadHero, getPortfolio, getPortfolioByUsername, uploadSkills, uploadServices, addExperience, updateExperience, addProject, updateProject, deleteProject, sendTestEmail, uploadContacts } = require('../controller/portfolio')
 
 const allowCors = fn => async (req, res) => {
     res.setHeader('Access-Control-Allow-Credentials', true)
@@ -37,5 +37,6 @@ router.post('/deleteProject', allowCors(deleteProject))
 router.post('/uploadContacts', allowCors(uploadContacts))
 router.post('/testEmail', allowCors(sendTestEmail))
 router.post('/sendEmail', allowCors(sendEmail))
+router.post('/sendContactUs', allowCors(sendContactUs))
 
 module.exports = router 
