@@ -8,30 +8,46 @@ const { Readable }          =  require('stream')
 
 const key = require('../service-account-key-file.json');
 
-const jwtClient = new google.auth.JWT(
-    key.client_email,
-    null,
-    key.private_key,
-    ['https://www.googleapis.com/auth/drive.file'],
-    null
-);
+let transporter = null 
+let jwtClient = null
 
-// create reusable transporter object using the default SMTP transport
-// let transporter = nodemailer.createTransport({
-//     service: 'gmail',
-//     auth: {
-//         user: 'zantei.automailer@gmail.com',
-//         pass: 'oceuixdtqvbjcivd'
-//     }
-// });
+if(process.env.PRODUCTION) {
+    jwtClient = new google.auth.JWT(
+        process.env.CLIENT_EMAIL,
+        null,
+        process.env.PRIVATE_KEY,
+        ['https://www.googleapis.com/auth/drive.file'],
+        null
+    );
 
-let transporter = nodemailer.createTransport({
-    service: 'gmail',
-    auth: {
-        user: process.env.EMAIL,
-        pass: process.env.PASSWORD
-    }
-});
+    transporter = nodemailer.createTransport({
+        service: 'gmail',
+        auth: {
+            user: process.env.EMAIL,
+            pass: process.env.PASSWORD
+        }
+    });
+}
+else {
+    require('dotenv').config()
+
+    jwtClient = new google.auth.JWT(
+        process.env.CLIENT_EMAIL,
+        null,
+        process.env.PRIVATE_KEY,
+        ['https://www.googleapis.com/auth/drive.file'],
+        null
+    );
+
+    transporter = nodemailer.createTransport({
+        service: 'gmail',
+        auth: {
+            user: process.env.GMAIL_EMAIL,
+            pass: process.env.GMAIL_PASSWORD
+        }
+    });
+}
+
 
 function filename(base64String){
     return (uuid.v4() + path.extname(getExtensionName(base64String)))
