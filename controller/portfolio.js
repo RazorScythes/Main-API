@@ -176,13 +176,13 @@ exports.getPortfolioByUsername = async (req, res) => {
 
                     //res.setHeader('Set-Cookie', 'userId=newUserId; Max-Age=2592000', 'Domain=.localhost');
                     // res.cookie('userId', newUserId, { maxAge: 2592000000, secure: true, httpOnly: false, sameSite: 'None', domain: 'http://localhost:5173/' })
-                    res.cookie('my-cookie', 'cookie-value', {
-                        domain: '.main-website-sage.vercel.app',
-                        path: '/',
-                        httpOnly: false,
-                        sameSite: 'none',
-                        secure: 'auto'
-                      });
+                    // res.cookie('my-cookie', 'cookie-value', {
+                    //     domain: '.main-website-sage.vercel.app',
+                    //     path: '/',
+                    //     httpOnly: false,
+                    //     sameSite: 'none',
+                    //     secure: 'auto'
+                    //   });
 
                     res.status(200).json({ 
                         result: user.portfolio_id,
