@@ -174,7 +174,7 @@ exports.getPortfolioByUsername = async (req, res) => {
 
                     await Portfolio.findByIdAndUpdate(user.portfolio_id, { visited: count }, {new: true})
 
-                    res.cookie('userId', newUserId, { maxAge: 2592000000, secure: false });
+                    res.cookie('userId', newUserId, { maxAge: 2592000000 });
                     // res.setHeader('Set-Cookie', 'userId=newUserId; Max-Age=2592000');
                     res.status(200).json({ 
                         result: user.portfolio_id,
