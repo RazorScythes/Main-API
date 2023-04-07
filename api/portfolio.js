@@ -6,7 +6,8 @@ const { publishPortfolio, sendEmail, sendContactUs, getProject, unpublishPortfol
 
 const allowCors = fn => async (req, res) => {
     res.setHeader('Access-Control-Allow-Credentials', true)
-    res.setHeader('Access-Control-Allow-Origin', '*')
+    res.setHeader('Access-Control-Allow-Origin', req.header('origin'))
+    //res.setHeader('Access-Control-Allow-Origin', '*')
     // another common pattern
     // res.setHeader('Access-Control-Allow-Origin', req.headers.origin);
     res.setHeader('Access-Control-Allow-Methods', 'GET,OPTIONS,PATCH,DELETE,POST,PUT')
@@ -25,7 +26,7 @@ router.post('/publishPortfolio', allowCors(publishPortfolio))
 router.post('/unpublishPortfolio', allowCors(unpublishPortfolio))
 router.post('/getProject', allowCors(getProject))
 router.post('/getPortfolio', allowCors(getPortfolio))
-router.post('/getPortfolioByUsername', allowCors(getPortfolioByUsername))
+router.post('/getPortfolioByUsername', getPortfolioByUsername)
 router.post('/hero', allowCors(uploadHero))
 router.post('/skills', allowCors(uploadSkills))
 router.post('/services', allowCors(uploadServices))

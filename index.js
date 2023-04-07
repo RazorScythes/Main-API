@@ -56,9 +56,17 @@ app.get("/", handleGet)
 
 app.use(express.json({limit: '150mb'}))
 
+app.use(function(req, res, next) {
+    res.header('Access-Control-Allow-Origin', req.header('origin') );
+    next();
+});
+
 app.use(cors({
-    origin: true, 
-    credentials: true 
+    origin: function(origin, callback){
+      return callback(null, true);
+    },
+    optionsSuccessStatus: 200,
+    credentials: true
 }))
 
 app.use(express.static(path.join(__dirname,'/tmp')));
