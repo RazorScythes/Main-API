@@ -6,10 +6,8 @@ const nodemailer            = require('nodemailer');
 const { google }            = require('googleapis');
 const { Readable }          =  require('stream')
 
-const key = require('../service-account-key-file.json');
-
-let transporter = null 
-let jwtClient = null
+var transporter = null 
+var jwtClient = null
 
 if(process.env.PRODUCTION) {
     jwtClient = new google.auth.JWT(

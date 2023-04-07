@@ -1,4 +1,3 @@
-const https                     = require('https');
 const hsts                      = require('hsts')
 const express                   = require('express')
 const cors                      = require('cors')
@@ -8,18 +7,8 @@ const mongoose                  = require('mongoose')
 const User                      = require('./models/user.model')
 const bcrypt                    = require("bcryptjs")
 
-const auth_router                       = require('./api/auth')
-const portfolio_router                  = require('./api/portfolio')
-
-// require('dotenv').config()
-
-// if(process.env.DEVELOPMENT){
-//    const { initFolders }       = require('./folder')
-
-//    const folders = ['public', 'public/portfolio_hero_image', 'tmp', 'tmp/portfolio_hero_image']
-    
-//    initFolders(folders)
-// }
+const auth_router               = require('./api/auth')
+const portfolio_router          = require('./api/portfolio')
 
 const app = express()
 const port = 3000
