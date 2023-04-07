@@ -7,6 +7,7 @@ const mongoose                  = require('mongoose')
 const User                      = require('./models/user.model')
 const bcrypt                    = require("bcryptjs")
 const cookieParser              = require('cookie-parser')
+const expressSession            = require('express-session')
 const auth_router               = require('./api/auth')
 const portfolio_router          = require('./api/portfolio')
 
@@ -31,6 +32,21 @@ db.once('open', () => {
     console.log('Database Connection Established')
 })
 
+app.use(
+    expressSession({
+      name: "SESS_NAME",
+      secret: "SESS_SECRET",
+      saveUninitialized: false,
+      resave: false,
+      cookie: {
+        domain:'.localhost:5173',
+        secure: process.env.PRODUCTION === "YES",
+        maxAge: 31536000,
+        httpOnly: true,
+      },
+    })
+);
+
 app.use(cookieParser())
 app.use(hsts({
     maxAge: 31536000,        // Must be at least 1 year to be approved
@@ -46,6 +62,7 @@ app.use(express.urlencoded({
 }))
 
 const handleGet = (req, res) => {
+    res.cookie(`Cookie token name`,`encrypted cookie string Value`);
     res.send(`
         This is a GET request <br/>
         Sample Environment Variable: ${process.env.HANDLE_VALUE}
