@@ -6,7 +6,7 @@ const path                      = require('path')
 const mongoose                  = require('mongoose')
 const User                      = require('./models/user.model')
 const bcrypt                    = require("bcryptjs")
-
+const cookieParser              = require('cookie-parser')
 const auth_router               = require('./api/auth')
 const portfolio_router          = require('./api/portfolio')
 
@@ -31,6 +31,7 @@ db.once('open', () => {
     console.log('Database Connection Established')
 })
 
+app.use(cookieParser())
 app.use(hsts({
     maxAge: 31536000,        // Must be at least 1 year to be approved
     includeSubDomains: true, // Must be enabled to be approved
@@ -56,7 +57,8 @@ app.get("/", handleGet)
 app.use(express.json({limit: '150mb'}))
 
 app.use(cors({
-    credentials: true, 
+    origin: true, 
+    credentials: true 
 }))
 
 app.use(express.static(path.join(__dirname,'/tmp')));
@@ -83,7 +85,7 @@ async function defaultAdmin() {
             username : 'admin',
             password: hashedPassword
         })
-        await newAccount.save().then("Default Admin created");
+        await newAccount.save().then(console.log("Default Admin created"));
 
     } catch (error) {
         console.log(error)

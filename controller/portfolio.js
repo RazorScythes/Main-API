@@ -32,7 +32,7 @@ else {
     jwtClient = new google.auth.JWT(
         process.env.CLIENT_EMAIL,
         null,
-        process.env.PRIVATE_KEY,
+        process.env.PRIVATE_KEY.replace(/\\n/g, '\n'),
         ['https://www.googleapis.com/auth/drive.file'],
         null
     );
@@ -61,7 +61,8 @@ exports.publishPortfolio = async (req, res) => {
     let existing = await Users.findById(req.body.id).populate('portfolio_id')
     
     if(!existing.portfolio_id){
-        let newPortfolio = { published: true }
+        
+        const newPortfolio = new Portfolio({ user: id, published: true })
 
         await newPortfolio.save().then(async (result) => {
             await Users.findByIdAndUpdate(id, {portfolio_id: result._id}, {new: true})
@@ -95,7 +96,8 @@ exports.unpublishPortfolio = async (req, res) => {
     let existing = await Users.findById(req.body.id).populate('portfolio_id')
     
     if(!existing.portfolio_id){
-        let newPortfolio = { published: false }
+
+        const newPortfolio = new Portfolio({ user: id, published: false })
 
         await newPortfolio.save().then(async (result) => {
             await Users.findByIdAndUpdate(id, {portfolio_id: result._id}, {new: true})
@@ -152,11 +154,42 @@ exports.getProject = async (req, res) => {
 
 exports.getPortfolioByUsername = async (req, res) => {
     const { username } = req.body
+    const userId = req.cookies.userId;
+
     await Users.findOne({username: username}).populate('portfolio_id')
-        .then(user => res.status(200).json({ 
-            result: user.portfolio_id,
-            published: user.portfolio_id.published
-        }))
+        .then(async (user) => {
+            // if (!userId) {
+            //     let portfolio = 
+            //     let portfolio = await Portfolio.findByIdAndUpdate(existing.portfolio_id, { ...hero, hero }, {new: true})
+            // }
+            
+            if(user.portfolio_id) {
+                const newUserId = Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
+
+                if (!userId) {
+                    let count = 0
+
+                    if(!user.portfolio_id.visited) count = 1
+                    else count = user.portfolio_id.visited + 1
+
+                    await Portfolio.findByIdAndUpdate(user.portfolio_id, { visited: count }, {new: true})
+
+                    res.cookie('userId', newUserId, { maxAge: 2592000000, secure: false });
+                    // res.setHeader('Set-Cookie', 'userId=newUserId; Max-Age=2592000');
+                    res.status(200).json({ 
+                        result: user.portfolio_id,
+                        published: user.portfolio_id.published
+                    });
+                }
+                else 
+                    res.status(200).json({ 
+                        result: user.portfolio_id,
+                        published: user.portfolio_id.published
+                    })
+            }
+            else
+                res.status(404).json({ variant: 'danger', message: err })
+        })
         .catch(err => res.status(404).json({ variant: 'danger', message: err }))
 }
 
@@ -889,7 +922,10 @@ exports.uploadServices = async (req, res) => {
         
                             try {
                                 if(!existing.portfolio_id){
-                                    await req.body.save().then(async (result) => {
+
+                                    const newPortfolio = new Portfolio({ user: id, services })
+
+                                    await newPortfolio.save().then(async (result) => {
                                         await Users.findByIdAndUpdate(id, {portfolio_id: result._id}, {new: true})
                                     });
                 
