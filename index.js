@@ -71,14 +71,6 @@ const handleGet = (req, res) => {
 
 app.get("/", handleGet)
 
-app.get('/set-cookie', (req, res) => {
-    // Set a cookie with a name of "myCookie" and a value of "myValue"
-    res.cookie('myCookie', 'myValue', { domain: 'main-website-sage.vercel.app', path: '/' });
-  
-    // Send a response with a Set-Cookie header
-    res.send('Cookie has been set');
-  });
-  
 app.use(express.json({limit: '150mb'}))
 
 app.use(function(req, res, next) {

@@ -3,7 +3,7 @@ const Schema        = mongoose.Schema
 
 const portfolioSchema = new Schema({
     published: { type: Boolean },
-    visited: { type: Number },
+    visited: { type: Array },
     user: {
         type: Schema.Types.ObjectId,
         ref: 'User'

@@ -154,40 +154,41 @@ exports.getProject = async (req, res) => {
 
 exports.getPortfolioByUsername = async (req, res) => {
     const { username } = req.body
-    const userId = req.cookies.userId;
-
+  
     await Users.findOne({username: username}).populate('portfolio_id')
         .then(async (user) => {
-            // if (!userId) {
-            //     let portfolio = 
-            //     let portfolio = await Portfolio.findByIdAndUpdate(existing.portfolio_id, { ...hero, hero }, {new: true})
-            // }
-            
             if(user.portfolio_id) {
-                const newUserId = Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
 
-                if (!userId) {
-                    let count = 0
+                if (req.headers.uid) {
+                    let uid_exist = false
 
-                    if(!user.portfolio_id.visited) count = 1
-                    else count = user.portfolio_id.visited + 1
+                    user.portfolio_id.visited.some((id) => {
+                        if(req.headers.uid === id){
+                            uid_exist = true
+                            return true
+                        }
+                    })
 
-                    await Portfolio.findByIdAndUpdate(user.portfolio_id, { visited: count }, {new: true})
+                    if(!uid_exist) {
+                        let visited_list = []
+                        if(!user.portfolio_id.visited) visited_list.push(req.headers.uid)
+                        else {
+                            user.portfolio_id.visited.push(req.headers.uid)
+                            visited_list = user.portfolio_id.visited
+                        }
 
-                    //res.setHeader('Set-Cookie', 'userId=newUserId; Max-Age=2592000', 'Domain=.localhost');
-                    // res.cookie('userId', newUserId, { maxAge: 2592000000, secure: true, httpOnly: false, sameSite: 'None', domain: 'http://localhost:5173/' })
-                    // res.cookie('my-cookie', 'cookie-value', {
-                    //     domain: '.main-website-sage.vercel.app',
-                    //     path: '/',
-                    //     httpOnly: false,
-                    //     sameSite: 'none',
-                    //     secure: 'auto'
-                    //   });
-
-                    res.status(200).json({ 
-                        result: user.portfolio_id,
-                        published: user.portfolio_id.published
-                    });
+                        await Portfolio.findByIdAndUpdate(user.portfolio_id, { visited: visited_list }, {new: true})
+                        
+                        res.status(200).json({ 
+                            result: user.portfolio_id,
+                            published: user.portfolio_id.published
+                        });
+                    }
+                    else 
+                        res.status(200).json({ 
+                            result: user.portfolio_id,
+                            published: user.portfolio_id.published
+                        });
                 }
                 else 
                     res.status(200).json({ 
