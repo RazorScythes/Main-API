@@ -4,7 +4,7 @@ const path                  = require('path')
 const uuid                  = require('uuid');
 const nodemailer            = require('nodemailer');
 const { google }            = require('googleapis');
-const { Readable }          =  require('stream')
+const { Readable }          = require('stream')
 
 var transporter = null 
 var jwtClient = null
@@ -145,7 +145,10 @@ exports.getProject = async (req, res) => {
     
     if(Object.keys(result).length === 0) 
         return res.status(404).json({ variant: 'danger', message: "project not found" })
-
+    
+    if(user && user.full_name)
+        result['full_name'] = user.full_name
+        
     res.status(200).json({ 
         result: result,
         published: user.portfolio_id.published

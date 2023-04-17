@@ -2,6 +2,7 @@ const mongoose = require('mongoose')
 const Schema = mongoose.Schema
 
 const userSchema = Schema({
+    full_name: { type: String },
     avatar: { type: String },
     username: { type: String },
     email: { type: String },
