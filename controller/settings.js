@@ -12,7 +12,7 @@ if(process.env.PRODUCTION) {
     jwtClient = new google.auth.JWT(
         process.env.CLIENT_EMAIL,
         null,
-        process.env.PRIVATE_KEY,
+        process.env.PRIVATE_KEY.replace(/\\n/g, '\n'),
         ['https://www.googleapis.com/auth/drive.file'],
         null
     );

@@ -13,7 +13,7 @@ if(process.env.PRODUCTION) {
     jwtClient = new google.auth.JWT(
         process.env.CLIENT_EMAIL,
         null,
-        process.env.PRIVATE_KEY,
+        process.env.PRIVATE_KEY.replace(/\\n/g, '\n'),
         ['https://www.googleapis.com/auth/drive.file'],
         null
     );
@@ -148,7 +148,7 @@ exports.getProject = async (req, res) => {
     
     if(user && user.full_name)
         result['full_name'] = user.full_name
-        
+
     res.status(200).json({ 
         result: result,
         published: user.portfolio_id.published
