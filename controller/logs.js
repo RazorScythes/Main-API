@@ -39,5 +39,9 @@ exports.getLogs = async (req, res) => {
         })
         .catch((e) => {
             console.log(e)
+            return res.status(409).json({ 
+                variant: 'danger',
+                message: "409: there was a problem with the server."
+            });
         });
 }
