@@ -11,6 +11,7 @@ const expressSession            = require('express-session')
 const auth_router               = require('./api/auth')
 const portfolio_router          = require('./api/portfolio')
 const settings_router           = require('./api/settings')
+const logs_router               = require('./api/logs')
 
 const app = express()
 const port = 3000
@@ -92,7 +93,7 @@ app.use(express.static(path.join(__dirname,'/tmp')));
 app.use('/auth', auth_router)
 app.use('/portfolio', portfolio_router)
 app.use('/settings', settings_router)
-
+app.use('/logs', logs_router)
 /*
     Creating Admin by Default
 */

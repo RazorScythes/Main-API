@@ -2,6 +2,7 @@ const Users                 = require('../models/user.model')
 const nodemailer            = require('nodemailer');
 const uuid                  = require('uuid');
 const path                  = require('path')
+const bcrypt                = require('bcryptjs')
 const { google }            = require('googleapis');
 const { Readable }          = require('stream')
 
@@ -201,4 +202,45 @@ exports.updateProfile = async (req, res) => {
         .catch((e) => {
             console.log(e)
         });
+}
+
+exports.updatePassword = async (req, res) => {
+    const { id, password } = req.body
+    try {
+        const user = await Users.findById(id)
+
+        if (!user) 
+            return res.status(404).json({
+                message: 'User not found',
+                variant: 'danger'
+            })
+        
+        const passwordCompare = await bcrypt.compare(password.old, user.password)
+
+        if(!passwordCompare) return res.status(404).json({ message: "Old password is incorrect", variant: 'danger' })
+
+        const  hashedPassword = await bcrypt.hash(password.new, 12);
+
+        Users.findByIdAndUpdate(id, { password: hashedPassword }, { new: true })
+        .then((updated_user) => {
+            return res.status(200).json({
+                variant: 'success',
+                alert: "Password successfully updated!",
+                result: {
+                    avatar: updated_user.avatar
+                }
+            });
+        })
+        .catch((err) => {
+            console.log(err)
+            return res.status(409).json({ 
+                variant: 'danger',
+                message: "409: there was a problem with the server."
+            })
+        })
+
+    }
+    catch (err) {
+        console.log(err)
+    }
 }

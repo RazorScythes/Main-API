@@ -19,10 +19,8 @@ const allowCors = fn => async (req, res) => {
     return await fn(req, res)
 }
 
-const { getProfile, updateProfile, updatePassword } = require('../controller/settings')
+const { getLogs } = require('../controller/logs')
 
-router.post('/getProfile', allowCors(getProfile))
-router.post('/updateProfile', allowCors(updateProfile))
-router.post('/updatePassword', allowCors(updatePassword))
+router.post('/getLogs', allowCors(getLogs))
 
 module.exports = router 

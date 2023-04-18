@@ -1,5 +1,6 @@
 const Users                 = require('../models/user.model')
 const Portfolio             = require('../models/portfolio.model')
+const Logs                  = require('../models/logs.model')
 const path                  = require('path')
 const uuid                  = require('uuid');
 const nodemailer            = require('nodemailer');
@@ -156,8 +157,8 @@ exports.getProject = async (req, res) => {
 }
 
 exports.getPortfolioByUsername = async (req, res) => {
-    const { username } = req.body
-  
+    const { username, user_visit } = req.body
+    
     await Users.findOne({username: username}).populate('portfolio_id')
         .then(async (user) => {
             if(user.portfolio_id) {
@@ -181,11 +182,19 @@ exports.getPortfolioByUsername = async (req, res) => {
                         }
 
                         await Portfolio.findByIdAndUpdate(user.portfolio_id, { visited: visited_list }, {new: true})
-                        
-                        res.status(200).json({ 
-                            result: user.portfolio_id,
-                            published: user.portfolio_id.published
-                        });
+                        const newLogs = new Logs({ 
+                            user: user._id, 
+                            viewer: user_visit ? user_visit : "Unknown",
+                            subject: 'Portfolio',
+                            message: 'This user viewed your portfolio page.' 
+                        })
+
+                        await newLogs.save().then(() => {
+                            res.status(200).json({ 
+                                result: user.portfolio_id,
+                                published: user.portfolio_id.published
+                            });
+                        })
                     }
                     else 
                         res.status(200).json({ 
