@@ -19,8 +19,14 @@ const allowCors = fn => async (req, res) => {
     return await fn(req, res)
 }
 
-const { getVideoByID } = require('../controller/video')
+const { addOneLikes, addOneDislikes, addOneViews, getVideoByID, getComments, uploadComment, removeComment } = require('../controller/video')
 
+router.post('/addOneLikes', allowCors(addOneLikes))
+router.post('/addOneDislikes', allowCors(addOneDislikes))
+router.post('/addOneViews', allowCors(addOneViews))
 router.post('/getVideoByID', allowCors(getVideoByID))
+router.post('/getComments', allowCors(getComments))
+router.post('/uploadComment', allowCors(uploadComment))
+router.post('/removeComment', allowCors(removeComment))
 
 module.exports = router 

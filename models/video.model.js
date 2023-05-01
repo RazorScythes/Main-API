@@ -6,12 +6,13 @@ const videoSchema = new Schema({
         type: Schema.Types.ObjectId,
         ref:'User'
     },
+    owner: { type: String },
     link: { type: String },
     title: { type: String },
     likes: { type: [String] },
     tags: { type: Array },
     dislikes: { type: [String] },
-    views: { type: Number, default: 0 },
+    views: { type: Array },
     comment: { type: Array },
 },{
     timestamps: true,
