@@ -1,5 +1,44 @@
 const Video               = require('../models/video.model')
+const Users               = require('../models/user.model')
 const uuid                = require('uuid');
+
+exports.getVideos = async (req, res) => {
+    const { id } = req.body
+
+    let videos = await Video.find({})
+
+    if(id) {
+        const user = await Users.findById(id)
+
+        if(user.safe_content)
+            videos = videos.filter((item) => item.strict === user.safe_content)
+        
+        if(videos.length > 0) {
+            res.status(200).json({ 
+                result: videos
+            })
+        }
+        else {
+            res.status(404).json({ 
+                message: "No available videos"
+            })
+        }
+    }
+    else {
+        videos = videos.filter((item) => item.strict === false)
+
+        if(videos.length > 0) {
+            res.status(200).json({ 
+                result: videos
+            })
+        }
+        else {
+            res.status(404).json({ 
+                message: "No available videos"
+            })
+        }
+    }
+}
 
 exports.addOneLikes = async (req, res) => {
     const { id, likes, dislikes } = req.body

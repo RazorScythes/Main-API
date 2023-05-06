@@ -14,6 +14,8 @@ const videoSchema = new Schema({
     dislikes: { type: [String] },
     views: { type: Array },
     comment: { type: Array },
+    strict: { type: Boolean },
+    related_videos: { type: Array }
 },{
     timestamps: true,
     collection: "video"

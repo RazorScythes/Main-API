@@ -17,7 +17,8 @@ const userSchema = Schema({
         ref: 'Portfolio'
     },
     reset_password: { type: Boolean },
-    verified: { type: Boolean }
+    verified: { type: Boolean },
+    safe_content: { type: Boolean }
 },{
     timestamps: true
 })
