@@ -10,9 +10,9 @@ exports.getVideos = async (req, res) => {
     if(id) {
         const user = await Users.findById(id)
 
-        if(user.safe_content)
-            videos = videos.filter((item) => item.strict === user.safe_content)
-        
+        if(!user.safe_content || user.safe_content === undefined)
+            videos = videos.filter((item) => item.strict !== true)
+
         if(videos.length > 0) {
             res.status(200).json({ 
                 result: videos

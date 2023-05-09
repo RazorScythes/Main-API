@@ -13,6 +13,7 @@ const portfolio_router          = require('./api/portfolio')
 const settings_router           = require('./api/settings')
 const logs_router               = require('./api/logs')
 const video_router              = require('./api/video')
+const upload_router             = require('./api/uploads')
 
 const app = express()
 const port = 3000
@@ -96,9 +97,12 @@ app.use('/portfolio', portfolio_router)
 app.use('/settings', settings_router)
 app.use('/logs', logs_router)
 app.use('/video', video_router)
+app.use('/uploads', upload_router)
+
 /*
     Creating Admin by Default
 */
+
 async function defaultAdmin() {
     let default_admin = await User.find({username: 'admin'})
 

@@ -15,6 +15,7 @@ const videoSchema = new Schema({
     views: { type: Array },
     comment: { type: Array },
     strict: { type: Boolean },
+    privacy: { type: Boolean },
     related_videos: { type: Array }
 },{
     timestamps: true,
