@@ -19,9 +19,10 @@ const allowCors = fn => async (req, res) => {
     return await fn(req, res)
 }
 
-const { getUserVideo, uploadVideo } = require('../controller/uploads')
+const { getUserVideo, uploadVideo, editVideo, removeVideo } = require('../controller/uploads')
 
 router.post('/getUserVideo', allowCors(getUserVideo))
 router.post('/uploadVideo', allowCors(uploadVideo))
-
+router.post('/editVideo', allowCors(editVideo))
+router.post('/removeVideo', allowCors(removeVideo))
 module.exports = router 
