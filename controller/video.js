@@ -10,7 +10,7 @@ exports.getVideos = async (req, res) => {
     if(id) {
         const user = await Users.findById(id)
 
-        if(!user.safe_content || user.safe_content === undefined)
+        if(user.safe_content || user.safe_content === undefined)
             videos = videos.filter((item) => item.strict !== true)
 
         if(videos.length > 0) {
@@ -221,7 +221,7 @@ exports.getRelatedVideos = async(req, res) => {
         // const foundRestrictVideos = video.related_videos.some((item) => { if(item.strict) return true })
 
         if(video.related_videos.length >= 12) {
-            if(!user.safe_content || user.safe_content === undefined) {
+            if(user.safe_content || user.safe_content === undefined) {
                 const related = video.related_videos.filter((item) => item.strict !== true)
                 res.status(200).json({
                     relatedVideos: related
@@ -309,7 +309,7 @@ exports.getRelatedVideos = async(req, res) => {
                     if(user) {
                         //if((user && user?.safe_content === undefined) || (user && !user.safe_content)) {
                         let related = []
-                        if(!user.safe_content || user.safe_content === undefined) 
+                        if(user.safe_content || user.safe_content === undefined) 
                             related = result.related_videos.filter((item) => item.strict !== true)
                         else 
                             related = result.related_videos

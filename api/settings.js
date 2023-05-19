@@ -19,10 +19,13 @@ const allowCors = fn => async (req, res) => {
     return await fn(req, res)
 }
 
-const { getProfile, updateProfile, updatePassword } = require('../controller/settings')
+const { verifyEmail, sendVerificationEmail, getProfile, updateProfile, updatePassword, updateOptions } = require('../controller/settings')
 
+router.post('/verifyEmail', allowCors(verifyEmail))
+router.post('/sendVerificationEmail', allowCors(sendVerificationEmail))
 router.post('/getProfile', allowCors(getProfile))
 router.post('/updateProfile', allowCors(updateProfile))
 router.post('/updatePassword', allowCors(updatePassword))
+router.post('/updateOptions', allowCors(updateOptions))
 
 module.exports = router 
