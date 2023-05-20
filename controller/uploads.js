@@ -9,20 +9,20 @@ exports.getUserVideo = async (req, res) => {
         message: "Error 404: User not found."
     });
 
-    Video.find({ user: id })
-    .sort({ createdAt: -1 })
-    .then((result) => {
+    const user_video = await Video.find({ user: id }).sort({ createdAt: -1 })
+
+    if(user_video.length > 0) {
         res.status(200).json({ 
-            result: result,
+            result: user_video
         });
-    })
-    .catch((err) => {
-        console.log(err)
+    }
+    else {
         return res.status(404).json({ 
             variant: 'danger',
-            message: "Error Uploading Videos"
+            message: "Error Fetching Videos"
         });
-    });
+    }
+    
 }
 
 exports.uploadVideo = async (req, res) => {
@@ -49,6 +49,40 @@ exports.uploadVideo = async (req, res) => {
         return res.status(404).json({ 
             variant: 'danger',
             message: "Error Uploading Videos"
+        });
+    });
+}
+
+exports.changeStrictById = async (req, res) => {
+    const { id, strict } = req.body
+
+    Video.findByIdAndUpdate(id, { strict: strict }, { new: true })
+    .then((result) => {
+        res.status(200).json({ 
+            result: result
+        });
+    })
+    .catch(() => {
+        return res.status(404).json({ 
+            variant: 'danger',
+            message: "Error Updating Videos"
+        });
+    });
+}
+
+exports.changePrivacyById = async (req, res) => {
+    const { id, privacy } = req.body
+
+    Video.findByIdAndUpdate(id, { privacy: privacy }, { new: true })
+    .then((result) => {
+        res.status(200).json({ 
+            result: result
+        });
+    })
+    .catch(() => {
+        return res.status(404).json({ 
+            variant: 'danger',
+            message: "Error Updating Videos"
         });
     });
 }

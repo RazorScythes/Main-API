@@ -414,7 +414,7 @@ exports.sendVerificationEmail = async (req, res) => {
             .then(() => {   
                 return res.status(200).json({ 
                     variant: 'success',
-                    heading: "Email Sent",
+                    heading: "Verification Email Sent",
                     paragraph: "Please check your email"
                 })
             })
