@@ -13,6 +13,8 @@ exports.getVideos = async (req, res) => {
         if(user.safe_content || user.safe_content === undefined)
             videos = videos.filter((item) => item.strict !== true)
 
+        videos = videos.filter((item) => item.privacy !== true)
+
         if(videos.length > 0) {
             res.status(200).json({ 
                 result: videos
@@ -26,6 +28,7 @@ exports.getVideos = async (req, res) => {
     }
     else {
         videos = videos.filter((item) => item.strict === false)
+        videos = videos.filter((item) => item.privacy !== true)
 
         if(videos.length > 0) {
             res.status(200).json({ 
@@ -204,6 +207,22 @@ function getRandomIndices(array, loopCount) {
     return pickedIndices
 }
 
+function getVideoDataById(id) {
+    return new Promise(async (resolve) => {
+        const video = await Video.findById(id)
+        const jsonData = {
+            _id: video._id,
+            title: video.title,
+            views: video.views,
+            link: video.link,
+            strict: video.strict,
+            privacy: video.privacy,
+            createdAt: video.createdAt
+        }
+        resolve(jsonData)
+    });
+}
+
 exports.getRelatedVideos = async(req, res) => {
     const { id, videoId } = req.body
 
@@ -218,39 +237,64 @@ exports.getRelatedVideos = async(req, res) => {
 
         if(!video) return res.status(404).json({ variant: 'danger', message: err })
 
-        // const foundRestrictVideos = video.related_videos.some((item) => { if(item.strict) return true })
+        if(video.related_videos.length >= 16) {
 
-        if(video.related_videos.length >= 12) {
-            if(user.safe_content || user.safe_content === undefined) {
-                const related = video.related_videos.filter((item) => item.strict !== true)
-                res.status(200).json({
-                    relatedVideos: related
-                })
-            }
-            else {
-                res.status(200).json({
-                    relatedVideos: video.related_videos.slice(0, 12)
-                })
-            }
+            let video_arr = []
+
+            video.related_videos.forEach((item) => {
+                video_arr.push(getVideoDataById(item))
+            })
+
+            Promise.all(video_arr)
+            .then((video_results) => {
+                if(user) {
+                    let related = []
+
+                    if(user.safe_content || user.safe_content === undefined) {
+                        related = video_results.filter((item) => item.strict !== true)
+                        related = related.filter((item) => item.privacy !== true)
+                    }
+                    else {
+                        related = video_results.filter((item) => item.privacy !== true)
+                    }
+             
+                    res.status(200).json({
+                        relatedVideos: related
+                    })
+                }
+                else {
+                    let related = video_results.filter((item) => item.strict !== true)
+                    related = related.filter((item) => item.privacy !== true)
+              
+                    res.status(200).json({
+                        relatedVideos: related
+                    })
+                }
+            })
+            .catch((e) => {
+                console.log(e)
+                res.status(409).json({ message: e.message });
+            });
         }
         else {
             const allVideos = await Video.find({}).populate('user')
-            const slots = 12 //- video.related_videos.length
+            const slots = 16 //- video.related_videos.length
             const collection = []
 
             const sorted = allVideos.filter((item) => !item._id.equals(video._id) )
 
             sorted.forEach((item) => {
-                    if(user && item.user._id.equals(video.user._id)){
-                        collection.push({
-                            _id: item._id,
-                            title: item.title,
-                            views: item.views,
-                            link: item.link,
-                            strict: item.strict,
-                            createdAt: item.createdAt
-                        })
-                    }
+                if(item.user._id.equals(video.user._id)){
+                    collection.push({
+                        _id: item._id,
+                        title: item.title,
+                        views: item.views,
+                        link: item.link,
+                        strict: item.strict,
+                        privacy: item.privacy,
+                        createdAt: item.createdAt
+                    })
+                }
                 if(item.owner.toLowerCase() === video.owner.toLowerCase()){
                     collection.push({
                         _id: item._id,
@@ -258,6 +302,7 @@ exports.getRelatedVideos = async(req, res) => {
                         views: item.views,
                         link: item.link,
                         strict: item.strict,
+                        privacy: item.privacy,
                         createdAt: item.createdAt
                     })
                 }
@@ -272,6 +317,7 @@ exports.getRelatedVideos = async(req, res) => {
                             views: data.views,
                             link: data.link,
                             strict: data.strict,
+                            privacy: item.privacy,
                             createdAt: data.createdAt
                         })
                     }
@@ -302,29 +348,55 @@ exports.getRelatedVideos = async(req, res) => {
                 index === self.findIndex((o) => o.title === obj.title)
             );
 
-            video.related_videos = deleteDuplicate
+            let collection_id = []
+
+            deleteDuplicate.forEach((item) => {
+                collection_id.push(item._id)
+            })
+
+            video.related_videos = collection_id
 
             Video.findByIdAndUpdate(videoId, video , { new: true })
                 .then((result) => {
-                    if(user) {
-                        //if((user && user?.safe_content === undefined) || (user && !user.safe_content)) {
-                        let related = []
-                        if(user.safe_content || user.safe_content === undefined) 
-                            related = result.related_videos.filter((item) => item.strict !== true)
-                        else 
-                            related = result.related_videos
+   
+                    let video_arr = []
 
-                        res.status(200).json({
-                            relatedVideos: related
-                        })
-                    }
-                    else {
-                        const related = result.related_videos.filter((item) => item.strict !== true)
-                        // result.related_videos.slice(0, 12)
-                        res.status(200).json({
-                            relatedVideos: related 
-                        })
-                    }
+                    result.related_videos.forEach((item) => {
+                        video_arr.push(getVideoDataById(item))
+                    })
+
+                    Promise.all(video_arr)
+                    .then((video_results) => {
+                        if(user) {
+
+                            let related = []
+
+                            if(user.safe_content || user.safe_content === undefined) {
+                                related = video_results.filter((item) => item.strict !== true)
+                                related = related.filter((item) => item.privacy !== true)
+                            }
+                            else {
+                                related = video_results.filter((item) => item.privacy !== true)
+                            }
+        
+                            res.status(200).json({
+                                relatedVideos: related
+                            })
+                        }
+                        else {
+                            let related = video_results.filter((item) => item.strict !== true)
+                            related = related.filter((item) => item.privacy !== true)
+                     
+                            res.status(200).json({
+                                relatedVideos: related
+                            })
+                        }
+                    })
+                    .catch((e) => {
+                        console.log(e)
+                        res.status(409).json({ message: e.message });
+                    });
+
                 })
                 .catch((err) => {
                     console.log(err)
