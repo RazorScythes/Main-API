@@ -125,13 +125,18 @@ exports.addOneViews = async (req, res) => {
 }
 
 exports.getVideoByID = async (req, res) => {
-    const { videoId } = req.body
+    const { id, videoId } = req.body
 
-    if(!videoId) return res.status(404).json({ variant: 'danger', message: err, notFound: true })
+    if(!videoId) return res.status(404).json({ variant: 'danger', message: "video id not found", notFound: true })
 
     try {
         let video = await Video.findById(videoId).populate('user')
 
+        let user = null
+        
+        if(id) user = await Users.findById(id)
+
+        console.log(video)
         if(!video) return res.status(404).json({ variant: 'danger', message: err, notFound: true })
 
         const result = {
@@ -140,13 +145,81 @@ exports.getVideoByID = async (req, res) => {
             video
         }
 
-        res.status(200).json({ 
-            result: result
-        })
+        if(user) {
+            if(user.safe_content || user.safe_content === undefined) {
+                if(video.strict) { res.status(409).json({ forbiden: 'strict'}) }
+                else if(video.privacy) { res.status(409).json({ forbiden: 'private' }) }
+                else { res.status(200).json({  result: result }) }
+            }
+            else {
+                if(video.privacy) { res.status(409).json({ forbiden: 'private' }) }
+                else { res.status(200).json({ result: result }) }
+            }
+        }
+        else {
+            if(video.strict) { res.status(409).json({ forbiden: 'strict'}) }
+            else if(video.privacy) { res.status(409).json({ forbiden: 'private' }) }
+            else { res.status(200).json({  result: result }) }
+        }
     }
     catch(err) {
         console.log(err)
         return res.status(404).json({ variant: 'danger', message: 'invalid videoId', notFound: true })
+    }
+}
+
+exports.getVideoByTag = async (req, res) => {
+    const { id, tag } = req.body
+
+    let videos = await Video.find({}).sort({ createdAt: -1 })
+    let collected_videos = []
+
+    videos.forEach((video) => {
+        tag.forEach((tag__) => {
+            video.tags.forEach((tag_) => {
+                if(tag__.toLowerCase() === tag_.toLowerCase())
+                    collected_videos.push(video)
+            })
+        })
+    })
+
+    let deleteDuplicate = collected_videos.filter((obj, index, self) =>
+        index === self.findIndex((o) => o._id.equals(obj._id))
+    );
+
+    if(id) {
+        const user = await Users.findById(id)
+
+        if(user.safe_content || user.safe_content === undefined)
+            deleteDuplicate = deleteDuplicate.filter((item) => item.strict !== true)
+
+        deleteDuplicate = deleteDuplicate.filter((item) => item.privacy !== true)
+
+        if(deleteDuplicate.length > 0) {
+            res.status(200).json({ 
+                result: deleteDuplicate
+            })
+        }
+        else {
+            res.status(404).json({ 
+                message: "No available videos"
+            })
+        }
+    }
+    else {
+        deleteDuplicate = deleteDuplicate.filter((item) => item.strict === false)
+        deleteDuplicate = deleteDuplicate.filter((item) => item.privacy !== true)
+
+        if(deleteDuplicate.length > 0) {
+            res.status(200).json({ 
+                result: deleteDuplicate
+            })
+        }
+        else {
+            res.status(404).json({ 
+                message: "No available videos"
+            })
+        }
     }
 }
 
