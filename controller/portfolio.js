@@ -223,7 +223,8 @@ exports.getPortfolio = async (req, res) => {
 
 exports.uploadHero = async (req, res) => {
     jwtClient.authorize(async (err, tokens) => {
-        const { id, full_name, description, profession, animation } = req.body
+        const { id, full_name, description, profession, animation, social_links, resume_link } = req.body
+
         let existing = await Users.findById(req.body.id).populate('portfolio_id')
 
         if (err) {
@@ -272,7 +273,7 @@ exports.uploadHero = async (req, res) => {
                     } else {
                         const imagePath = `https://drive.google.com/uc?export=view&id=${file.data.id}`
 
-                        const hero = { image: imagePath, full_name: full_name, description: description, profession: profession, animation: animation }
+                        const hero = { image: imagePath, full_name: full_name, description: description, profession: profession, animation: animation, social_links: social_links, resume_link: resume_link }
 
                         const newPortfolio = new Portfolio({ user: id, hero })
 
@@ -331,7 +332,7 @@ exports.uploadHero = async (req, res) => {
             }
         }
         else {
-            const hero = { full_name: full_name, description: description, profession: profession, animation: animation }
+            const hero = { full_name: full_name, description: description, profession: profession, animation: animation, social_links: social_links, resume_link: resume_link }
 
             const newPortfolio = new Portfolio({ user: id, hero })
 

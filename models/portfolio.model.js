@@ -13,7 +13,30 @@ const portfolioSchema = new Schema({
         full_name: { type: String },
         description: { type: String },
         profession: { type: Array },
-        animation: { type: Boolean }
+        animation: { type: Boolean },
+        social_links: {
+            facebook: { 
+                link: { type: String },
+                show: { type: Boolean }
+            },
+            twitter: { 
+                link: { type: String },
+                show: { type: Boolean }
+            },
+            instagram: { 
+                link: { type: String },
+                show: { type: Boolean }
+            },
+            github: { 
+                link: { type: String },
+                show: { type: Boolean }
+            },
+            linkedin: { 
+                link: { type: String },
+                show: { type: Boolean }
+            },
+        },
+        resume_link: { type: String }
     },
     skills: {
         image: { type: String },
