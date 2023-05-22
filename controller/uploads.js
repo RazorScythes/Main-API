@@ -1,6 +1,6 @@
 const Video               = require('../models/video.model')
 const Users               = require('../models/user.model')
-
+const mongoose            = require('mongoose');
 exports.getUserVideo = async (req, res) => {
     const { id } = req.body
 
@@ -45,7 +45,8 @@ exports.uploadVideo = async (req, res) => {
             message: "Video Uploaded Successfully"
         });
     })
-    .catch(() => {
+    .catch((err) => {
+        console.log(err)
         return res.status(404).json({ 
             variant: 'danger',
             message: "Error Uploading Videos"
@@ -139,6 +140,37 @@ exports.removeVideo = async (req, res) => {
         }
     })
     .catch((err) => {
+        return res.status(404).json({ variant: 'danger', message: err })
+    })
+}
+
+exports.bulkRemoveVideo = async (req, res) => {
+    const { id, videos_id } = req.body
+ 
+    if(!id) return res.status(404).json({ variant: 'danger', message: "User not found" })
+    
+    const objectIdsToDelete = videos_id.map(id => new mongoose.Types.ObjectId(id));
+
+    Video.deleteMany({ _id: { $in: objectIdsToDelete } })
+    .then(async (result) => {
+        console.log(result)
+        try {
+            let videos = await Video.find({ user: id }).sort({ createdAt: -1 })
+
+            res.status(200).json({ 
+                result: videos,
+            });
+        }
+        catch(err) {
+            console.log(err)
+            return res.status(404).json({ 
+                variant: 'danger',
+                message: "Failed to fetch videos"
+            });
+        }
+    })
+    .catch((err) => {
+        console.log(err)
         return res.status(404).json({ variant: 'danger', message: err })
     })
 }
