@@ -1,5 +1,6 @@
 const Video               = require('../models/video.model')
 const Users               = require('../models/user.model')
+const VideoArchive        = require('../models/videoArchive.model')
 const uuid                = require('uuid');
 
 exports.getVideos = async (req, res) => {
@@ -543,4 +544,65 @@ exports.removeComment = async (req, res) => {
         console.log(err)
         return res.status(404).json({ variant: 'danger', message: err })
     })
+}
+
+exports.addToWatchLater = async (req, res) => {
+    console.log(req.body)
+    const { id, videoId } = req.body
+
+    if(!id || !videoId) 
+        return  res.status(404).json({ 
+                    sideAlert: {
+                        variant: "danger",
+                        heading: "Missing Parameter",
+                        paragraph: "Failed to add videos to watch list."
+                    }
+                })
+    
+    const videoArchives = await VideoArchive.find({})
+
+    const videoExist = videoArchives.some((video) => {
+        if(video.user.equals(id) && video.video.equals(videoId)) {
+            return true
+        }
+    })
+    console.log(videoExist)
+    if(!videoExist) {
+        const newWatchLaterObj = {
+            user: id,
+            video: videoId
+        }
+
+        const newWatchLater = new VideoArchive(newWatchLaterObj)
+
+        newWatchLater.save()
+        .then(() => {
+            return res.status(200).json({ 
+                sideAlert: {
+                    variant: "success",
+                    heading: "Added to Watch Later",
+                    paragraph: "You can view this in your archive"
+                }
+            })
+        })
+        .catch((err) => {
+            console.log(err)
+            return res.status(404).json({ 
+                sideAlert: {
+                    variant: "danger",
+                    heading: "Added Failed",
+                    paragraph: "Failed to add videos to watch list."
+                }
+            })
+        })
+    }
+    else {
+        return res.status(409).json({ 
+            sideAlert: {
+                variant: "danger",
+                heading: "Video Already Added",
+                paragraph: "Please check your archive."
+            }
+        })
+    }
 }

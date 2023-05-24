@@ -71,6 +71,24 @@ exports.changeStrictById = async (req, res) => {
     });
 }
 
+exports.changeDownloadById = async (req, res) => {
+    const { id, downloadable } = req.body
+    
+    Video.findByIdAndUpdate(id, { downloadable: downloadable }, { new: true })
+    .then((result) => {
+        res.status(200).json({ 
+            result: result
+        });
+    })
+    .catch((err) => {
+        console.log(err)
+        return res.status(404).json({ 
+            variant: 'danger',
+            message: "Error Updating Videos"
+        });
+    });
+}
+
 exports.changePrivacyById = async (req, res) => {
     const { id, privacy } = req.body
 
@@ -90,7 +108,7 @@ exports.changePrivacyById = async (req, res) => {
 
 exports.editVideo = async (req, res) => {
     const { id, data } = req.body
- 
+    console.log(data)
     if(!data || !id) return res.status(404).json({ variant: 'danger', message: "Video not found" })
 
     Video.findByIdAndUpdate(data._id, data, { new: true }).populate('user')
