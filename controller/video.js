@@ -566,7 +566,7 @@ exports.addToWatchLater = async (req, res) => {
             return true
         }
     })
-    console.log(videoExist)
+
     if(!videoExist) {
         const newWatchLaterObj = {
             user: id,
