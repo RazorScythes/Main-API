@@ -224,6 +224,57 @@ exports.getVideoByTag = async (req, res) => {
     }
 }
 
+exports.getVideoByArtist = async (req, res) => {
+    const { id, artist } = req.body
+
+    let videos = await Video.find({}).sort({ createdAt: -1 })
+    let collected_videos = []
+
+    videos.forEach((video) => {
+        if(video.owner.toLowerCase() === artist.toLowerCase())
+            collected_videos.push(video)
+    })
+
+    let deleteDuplicate = collected_videos.filter((obj, index, self) =>
+        index === self.findIndex((o) => o._id.equals(obj._id))
+    );
+
+    if(id) {
+        const user = await Users.findById(id)
+
+        if(user.safe_content || user.safe_content === undefined)
+            deleteDuplicate = deleteDuplicate.filter((item) => item.strict !== true)
+
+        deleteDuplicate = deleteDuplicate.filter((item) => item.privacy !== true)
+
+        if(deleteDuplicate.length > 0) {
+            res.status(200).json({ 
+                result: deleteDuplicate
+            })
+        }
+        else {
+            res.status(404).json({ 
+                message: "No available videos"
+            })
+        }
+    }
+    else {
+        deleteDuplicate = deleteDuplicate.filter((item) => item.strict === false)
+        deleteDuplicate = deleteDuplicate.filter((item) => item.privacy !== true)
+
+        if(deleteDuplicate.length > 0) {
+            res.status(200).json({ 
+                result: deleteDuplicate
+            })
+        }
+        else {
+            res.status(404).json({ 
+                message: "No available videos"
+            })
+        }
+    }
+}
+
 exports.getComments = async (req, res) => {
     const { videoId } = req.body
 
@@ -311,7 +362,7 @@ exports.getRelatedVideos = async(req, res) => {
 
         if(!video) return res.status(404).json({ variant: 'danger', message: err })
 
-        if(video.related_videos.length >= 16) {
+        if(video.related_videos.length >= 30) {
 
             let video_arr = []
 
@@ -352,7 +403,7 @@ exports.getRelatedVideos = async(req, res) => {
         }
         else {
             const allVideos = await Video.find({}).populate('user')
-            const slots = 16 //- video.related_videos.length
+            const slots = 30 //- video.related_videos.length
             const collection = []
 
             const sorted = allVideos.filter((item) => !item._id.equals(video._id) )
