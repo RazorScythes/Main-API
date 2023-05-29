@@ -6,7 +6,7 @@ const gameSchema = new Schema({
         type: Schema.Types.ObjectId,
         ref:'User'
     },
-    feature_image: { type: String },
+    featured_image: { type: String },
     title: { type: String },
     description: { type: String },
     tags: { type: Array },
@@ -22,6 +22,8 @@ const gameSchema = new Schema({
     },
     leave_uploader_message: { type: String },
     download_count: { type: Number },
+    strict: { type: Boolean },
+    privacy: { type: Boolean },
     ratings: { type: Array }
 },{
     timestamps: true,
