@@ -24,7 +24,9 @@ const gameSchema = new Schema({
     download_count: { type: Number },
     strict: { type: Boolean },
     privacy: { type: Boolean },
-    ratings: { type: Array }
+    ratings: { type: Array },
+    guide_link: { type: String },
+    password: { type: String }
 },{
     timestamps: true,
     collection: "game"

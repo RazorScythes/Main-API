@@ -1,4 +1,5 @@
 const Video               = require('../models/video.model')
+const Game                = require('../models/games.model')
 const Users               = require('../models/user.model')
 const mongoose            = require('mongoose');
 exports.getUserVideo = async (req, res) => {
@@ -14,6 +15,29 @@ exports.getUserVideo = async (req, res) => {
     if(user_video.length > 0) {
         res.status(200).json({ 
             result: user_video
+        });
+    }
+    else {
+        return res.status(404).json({ 
+            variant: 'danger',
+            message: "Error Fetching Videos"
+        });
+    }
+}
+
+exports.getUserGame = async (req, res) => {
+    const { id } = req.body
+
+    if(!id) return res.status(404).json({ 
+        variant: 'danger',
+        message: "Error 404: User not found."
+    });
+
+    const user_game = await Game.find({ user: id }).sort({ createdAt: -1 })
+
+    if(user_game.length > 0) {
+        res.status(200).json({ 
+            result: user_game
         });
     }
     else {
@@ -50,6 +74,35 @@ exports.uploadVideo = async (req, res) => {
         return res.status(404).json({ 
             variant: 'danger',
             message: "Error Uploading Videos"
+        });
+    });
+}
+
+exports.uploadGame = async (req, res) => {
+    const { id, data } = req.body
+
+    if(!id) return res.status(404).json({ 
+                variant: 'danger',
+                message: "Error 404: User not found."
+            });
+
+    const newGame = new Game({ user: id, ...data })
+
+    await newGame.save()
+    .then(async () => {
+        let games = await Game.find({ user: id }).sort({ createdAt: -1 })
+
+        res.status(200).json({ 
+            result: games,
+            variant: 'success',
+            message: "Game Uploaded Successfully"
+        });
+    })
+    .catch((err) => {
+        console.log(err)
+        return res.status(404).json({ 
+            variant: 'danger',
+            message: "Error Uploading Game"
         });
     });
 }
