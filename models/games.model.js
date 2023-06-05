@@ -26,7 +26,8 @@ const gameSchema = new Schema({
     privacy: { type: Boolean },
     ratings: { type: Array },
     guide_link: { type: String },
-    password: { type: String }
+    password: { type: String },
+    related_games: { type: Array }
 },{
     timestamps: true,
     collection: "game"

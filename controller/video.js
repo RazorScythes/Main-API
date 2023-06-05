@@ -137,7 +137,6 @@ exports.getVideoByID = async (req, res) => {
         
         if(id) user = await Users.findById(id)
 
-        console.log(video)
         if(!video) return res.status(404).json({ variant: 'danger', message: err, notFound: true })
 
         const result = {

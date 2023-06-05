@@ -161,7 +161,6 @@ exports.changePrivacyById = async (req, res) => {
 
 exports.editVideo = async (req, res) => {
     const { id, data } = req.body
-    console.log(data)
     if(!data || !id) return res.status(404).json({ variant: 'danger', message: "Video not found" })
 
     Video.findByIdAndUpdate(data._id, data, { new: true }).populate('user')
@@ -187,6 +186,32 @@ exports.editVideo = async (req, res) => {
     })
 }
 
+exports.editGame = async (req, res) => {
+    const { id, data } = req.body
+    if(!data || !id) return res.status(404).json({ variant: 'danger', message: "Game not found" })
+
+    Game.findByIdAndUpdate(data._id, data, { new: true }).populate('user')
+    .then(async (result) => {
+        try {
+            let games = await Game.find({ user: id }).sort({ createdAt: -1 })
+            res.status(200).json({ 
+                variant: 'success',
+                message: `Game (${result.title}) successfully updated`,
+                result: games,
+            });
+        }
+        catch(err) {
+            console.log(err)
+            return res.status(404).json({ 
+                variant: 'danger',
+                message: "Failed to fetch videos"
+            });
+        }
+    })
+    .catch((err) => {
+        return res.status(404).json({ variant: 'danger', message: err })
+    })
+}
 
 exports.removeVideo = async (req, res) => {
     const { id, video_id } = req.body
@@ -230,6 +255,97 @@ exports.bulkRemoveVideo = async (req, res) => {
 
             res.status(200).json({ 
                 result: videos,
+            });
+        }
+        catch(err) {
+            console.log(err)
+            return res.status(404).json({ 
+                variant: 'danger',
+                message: "Failed to fetch videos"
+            });
+        }
+    })
+    .catch((err) => {
+        console.log(err)
+        return res.status(404).json({ variant: 'danger', message: err })
+    })
+}
+
+exports.removeGame = async (req, res) => {
+    const { id, game_id } = req.body
+ 
+    if(!id) return res.status(404).json({ variant: 'danger', message: "User not found" })
+    
+    Game.findByIdAndDelete(game_id)
+    .then(async () => {
+        try {
+            let games = await Game.find({ user: id }).sort({ createdAt: -1 })
+
+            res.status(200).json({ 
+                result: games,
+            });
+        }
+        catch(err) {
+            console.log(err)
+            return res.status(404).json({ 
+                variant: 'danger',
+                message: "Failed to fetch videos"
+            });
+        }
+    })
+    .catch((err) => {
+        return res.status(404).json({ variant: 'danger', message: err })
+    })
+}
+
+exports.changeGameStrictById = async (req, res) => {
+    const { id, strict } = req.body
+
+    Game.findByIdAndUpdate(id, { strict: strict }, { new: true })
+    .then((result) => {
+        res.status(200).json({ 
+            result: result
+        });
+    })
+    .catch(() => {
+        return res.status(404).json({ 
+            variant: 'danger',
+            message: "Error Updating Game"
+        });
+    });
+}
+
+exports.changeGamePrivacyById = async (req, res) => {
+    const { id, privacy } = req.body
+
+    Game.findByIdAndUpdate(id, { privacy: privacy }, { new: true })
+    .then((result) => {
+        res.status(200).json({ 
+            result: result
+        });
+    })
+    .catch(() => {
+        return res.status(404).json({ 
+            variant: 'danger',
+            message: "Error Updating Game"
+        });
+    });
+}
+
+exports.bulkRemoveGame = async (req, res) => {
+    const { id, game_id } = req.body
+ 
+    if(!id) return res.status(404).json({ variant: 'danger', message: "User not found" })
+    
+    const objectIdsToDelete = game_id.map(id => new mongoose.Types.ObjectId(id));
+
+    Game.deleteMany({ _id: { $in: objectIdsToDelete } })
+    .then(async (result) => {
+        try {
+            let games = await Game.find({ user: id }).sort({ createdAt: -1 })
+
+            res.status(200).json({ 
+                result: games,
             });
         }
         catch(err) {
