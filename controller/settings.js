@@ -7,6 +7,7 @@ const moment                = require('moment');
 const crypto                = require('crypto');
 const { google }            = require('googleapis');
 const { Readable }          = require('stream')
+const jwt                   = require('jsonwebtoken')
 
 var transporter = null 
 var jwtClient = null
@@ -184,6 +185,34 @@ function deleteSingleImage (delete_id, folder) {
             reject(err);
         }
     })
+}
+
+exports.userToken = async (req, res) => {
+    const token = req.headers.authorization.split(' ')[1]
+    
+    jwt.verify(token, process.env.SECRET_KEY, async (err, decoded) => {
+        if (err) {
+            console.error('Token verification failed:', err.message);
+        } else {
+            const currentTime = Math.floor(Date.now() / 1000); // Current Unix timestamp
+            const tokenExpirationTime = decoded.exp;
+        
+            if (tokenExpirationTime < currentTime) {
+                return res.status(401).json({ message: 'Token has expired.' })
+            } else {
+                const user = await Users.findById(decoded.id)
+
+                const userObj = {
+                    _id: user._id,
+                    username: user.username,
+                    role: user.role,
+                    name: user.name
+                }
+
+                return res.status(200).json({ result: userObj, token })
+            }
+        }
+    });
 }
 
 exports.getProfile = async (req, res) => {

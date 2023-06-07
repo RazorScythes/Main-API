@@ -2,6 +2,7 @@ const Video               = require('../models/video.model')
 const Game                = require('../models/games.model')
 const Users               = require('../models/user.model')
 const mongoose            = require('mongoose');
+
 exports.getUserVideo = async (req, res) => {
     const { id } = req.body
 
@@ -17,12 +18,12 @@ exports.getUserVideo = async (req, res) => {
             result: user_video
         });
     }
-    else {
-        return res.status(404).json({ 
-            variant: 'danger',
-            message: "Error Fetching Videos"
-        });
-    }
+    // else {
+    //     return res.status(404).json({ 
+    //         variant: 'danger',
+    //         message: "Error Fetching Videos"
+    //     });
+    // }
 }
 
 exports.getUserGame = async (req, res) => {
@@ -40,12 +41,12 @@ exports.getUserGame = async (req, res) => {
             result: user_game
         });
     }
-    else {
-        return res.status(404).json({ 
-            variant: 'danger',
-            message: "Error Fetching Videos"
-        });
-    }
+    // else {
+    //     return res.status(404).json({ 
+    //         variant: 'danger',
+    //         message: "Error Fetching Videos"
+    //     });
+    // }
     
 }
 

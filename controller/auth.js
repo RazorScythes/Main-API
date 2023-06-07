@@ -22,8 +22,12 @@ exports.SignIn = async (req, res) => {
 
         if(!isPasswordCorrect) return res.status(404).json({ message: "Unknown username or password" })
         
-        const token = jwt.sign({ email: userObj.username, id: userObj._id }, `${process.env.SECRET_KEY}`, { expiresIn: '9999years' } )
-        
+        const token = jwt.sign({ 
+                username: userObj.username, 
+                id: userObj._id 
+            }, `${process.env.SECRET_KEY}`, { expiresIn: '9999years' }
+        )
+
         res.status(200).json({ result: userObj, token })
     } catch (error) {
         console.log(error)

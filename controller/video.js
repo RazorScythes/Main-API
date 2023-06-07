@@ -229,8 +229,69 @@ exports.getVideoByArtist = async (req, res) => {
     let videos = await Video.find({}).sort({ createdAt: -1 })
     let collected_videos = []
 
+    if(!artist)
+        return res.status(404).json({ 
+            message: "No available videos"
+        })
+
     videos.forEach((video) => {
         if(video.owner.toLowerCase() === artist.toLowerCase())
+            collected_videos.push(video)
+    })
+
+    let deleteDuplicate = collected_videos.filter((obj, index, self) =>
+        index === self.findIndex((o) => o._id.equals(obj._id))
+    );
+
+    if(id) {
+        const user = await Users.findById(id)
+
+        if(user.safe_content || user.safe_content === undefined)
+            deleteDuplicate = deleteDuplicate.filter((item) => item.strict !== true)
+
+        deleteDuplicate = deleteDuplicate.filter((item) => item.privacy !== true)
+
+        if(deleteDuplicate.length > 0) {
+            res.status(200).json({ 
+                result: deleteDuplicate
+            })
+        }
+        else {
+            res.status(404).json({ 
+                message: "No available videos"
+            })
+        }
+    }
+    else {
+        deleteDuplicate = deleteDuplicate.filter((item) => item.strict === false)
+        deleteDuplicate = deleteDuplicate.filter((item) => item.privacy !== true)
+
+        if(deleteDuplicate.length > 0) {
+            res.status(200).json({ 
+                result: deleteDuplicate
+            })
+        }
+        else {
+            res.status(404).json({ 
+                message: "No available videos"
+            })
+        }
+    }
+}
+
+exports.getVideoBySearchKey = async (req, res) => {
+    const { id, searchKey } = req.body
+
+    let videos = await Video.find({}).sort({ createdAt: -1 })
+    let collected_videos = []
+
+    if(!searchKey)
+        return res.status(404).json({ 
+            message: "No available videos"
+        })
+
+    videos.forEach((video) => {
+        if(video.owner.toLowerCase().includes(searchKey.toLowerCase()) || video.title.toLowerCase().includes(searchKey.toLowerCase()))
             collected_videos.push(video)
     })
 
