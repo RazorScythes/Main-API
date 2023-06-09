@@ -70,7 +70,7 @@ const handleGet = (req, res) => {
     res.cookie(`Cookie token name`,`encrypted cookie string Value`);
     res.send(`
         This is a GET request <br/>
-        Sample Environment Variable: ${process.env.HANDLE_VALUE} ${process.env.SECRET_KEY}
+        Sample Environment Variable: ${process.env.HANDLE_VALUE}
     `);
 };
 

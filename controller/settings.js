@@ -193,6 +193,7 @@ exports.userToken = async (req, res) => {
     jwt.verify(token, process.env.SECRET_KEY, async (err, decoded) => {
         if (err) {
             console.error('Token verification failed:', err.message);
+            return res.status(401).json({ message: err.message })
         } else {
             const currentTime = Math.floor(Date.now() / 1000); // Current Unix timestamp
             const tokenExpirationTime = decoded.exp;
