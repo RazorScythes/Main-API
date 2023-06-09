@@ -64,7 +64,7 @@ exports.getGames = async (req, res) => {
         }
         else {
             res.status(404).json({ 
-                message: "No available videos"
+                message: "No available games"
             })
         }
     }
@@ -79,7 +79,7 @@ exports.getGames = async (req, res) => {
         }
         else {
             res.status(404).json({ 
-                message: "No available videos"
+                message: "No available games"
             })
         }
     }
@@ -332,29 +332,250 @@ exports.getRelatedGames = async(req, res) => {
 }
 
 exports.countTags = async (req, res) => {
-    const games = await Game.find({}).populate('user')
+    const { id } = req.body
+
+    var games = await Game.find({}).sort({ createdAt: -1 }).populate('user')
     var tag_list = []
-    
-    games.forEach((item) => {
-        if(item.tags.length > 0) {
-            item.tags.forEach((tag) => {
-                tag_list.push(tag)
+
+    if(id) {
+        const user = await Users.findById(id)
+
+        if(user.safe_content || user.safe_content === undefined)
+            games = games.filter((item) => item.strict !== true)
+
+        games = games.filter((item) => item.privacy !== true)
+
+        if(games.length > 0) {
+            games.forEach((item) => {
+                if(item.tags.length > 0) {
+                    item.tags.forEach((tag) => {
+                        tag_list.push(tag)
+                    })
+                }
+            })
+
+            const counts = tag_list.reduce((acc, tag) => {
+                if (acc[tag]) {
+                acc[tag]++;
+                } else {
+                acc[tag] = 1;
+                }
+                return acc;
+            }, {});
+            
+            const result = Object.entries(counts).map(([tag, count]) => ({ tag, count }));
+
+            res.status(200).json({
+                result: result
             })
         }
-    })
-
-    const counts = tag_list.reduce((acc, tag) => {
-        if (acc[tag]) {
-          acc[tag]++;
-        } else {
-          acc[tag] = 1;
+        else {
+            res.status(404).json({ 
+                message: "No available videos"
+            })
         }
-        return acc;
-    }, {});
-      
-    const result = Object.entries(counts).map(([tag, count]) => ({ tag, count }));
+    }
+    else {
+        games = games.filter((item) => item.strict === false)
+        games = games.filter((item) => item.privacy !== true)
 
-    res.status(200).json({
-        result: result
+        if(games.length > 0) {
+            games.forEach((item) => {
+                if(item.tags.length > 0) {
+                    item.tags.forEach((tag) => {
+                        tag_list.push(tag)
+                    })
+                }
+            })
+
+            const counts = tag_list.reduce((acc, tag) => {
+                if (acc[tag]) {
+                acc[tag]++;
+                } else {
+                acc[tag] = 1;
+                }
+                return acc;
+            }, {});
+            
+            const result = Object.entries(counts).map(([tag, count]) => ({ tag, count }));
+
+            res.status(200).json({
+                result: result
+            })
+        }
+        else {
+            res.status(404).json({ 
+                message: "No available videos"
+            })
+        }
+    }
+}
+
+exports.getGameByTag = async (req, res) => {
+    const { id, tag } = req.body
+
+    let games = await Game.find({}).sort({ createdAt: -1 }).populate('user')
+    let collected_games = []
+
+    games.forEach((game) => {
+        tag.forEach((tag__) => {
+            game.tags.forEach((tag_) => {
+                if(tag__.toLowerCase() === tag_.toLowerCase())
+                    collected_games.push(game)
+            })
+        })
     })
+
+    let deleteDuplicate = collected_games.filter((obj, index, self) =>
+        index === self.findIndex((o) => o._id.equals(obj._id))
+    );
+
+    if(id) {
+        const user = await Users.findById(id)
+
+        if(user.safe_content || user.safe_content === undefined)
+            deleteDuplicate = deleteDuplicate.filter((item) => item.strict !== true)
+
+        deleteDuplicate = deleteDuplicate.filter((item) => item.privacy !== true)
+
+        if(deleteDuplicate.length > 0) {
+            res.status(200).json({ 
+                result: deleteDuplicate
+            })
+        }
+        else {
+            res.status(404).json({ 
+                message: "No Available Games"
+            })
+        }
+    }
+    else {
+        deleteDuplicate = deleteDuplicate.filter((item) => item.strict === false)
+        deleteDuplicate = deleteDuplicate.filter((item) => item.privacy !== true)
+
+        if(deleteDuplicate.length > 0) {
+            res.status(200).json({ 
+                result: deleteDuplicate
+            })
+        }
+        else {
+            res.status(404).json({ 
+                message: "No Available Games"
+            })
+        }
+    }
+}
+
+exports.getGameByDeveloper = async (req, res) => {
+    var { id, developer } = req.body
+
+    let games = await Game.find({}).sort({ createdAt: -1 }).populate('user')
+    let collected_games = []
+
+    if(!developer)
+        return res.status(404).json({ 
+            message: "No Available Games"
+        })
+    
+    if(developer === "Anonymous") developer = ""
+
+    games.forEach((game) => {
+        if(game.details.developer?.toLowerCase() === developer.toLowerCase())
+            collected_games.push(game)
+    })
+
+    let deleteDuplicate = collected_games.filter((obj, index, self) =>
+        index === self.findIndex((o) => o._id.equals(obj._id))
+    );
+
+    if(id) {
+        const user = await Users.findById(id)
+
+        if(user.safe_content || user.safe_content === undefined)
+            deleteDuplicate = deleteDuplicate.filter((item) => item.strict !== true)
+
+        deleteDuplicate = deleteDuplicate.filter((item) => item.privacy !== true)
+
+        if(deleteDuplicate.length > 0) {
+            res.status(200).json({ 
+                result: deleteDuplicate
+            })
+        }
+        else {
+            res.status(404).json({ 
+                message: "No Available Games"
+            })
+        }
+    }
+    else {
+        deleteDuplicate = deleteDuplicate.filter((item) => item.strict === false)
+        deleteDuplicate = deleteDuplicate.filter((item) => item.privacy !== true)
+
+        if(deleteDuplicate.length > 0) {
+            res.status(200).json({ 
+                result: deleteDuplicate
+            })
+        }
+        else {
+            res.status(404).json({ 
+                message: "No Available Games"
+            })
+        }
+    }
+}
+
+exports.getGameBySearchKey = async (req, res) => {
+    const { id, searchKey } = req.body
+
+    let games = await Game.find({}).sort({ createdAt: -1 }).populate('user')
+    let collected_games = []
+
+    if(!searchKey)
+        return res.status(404).json({ 
+            message: "No Available Games"
+        })
+
+    games.forEach((game) => {
+        if(game.details.developer?.toLowerCase().includes(searchKey.toLowerCase()) || game.title.toLowerCase().includes(searchKey.toLowerCase()))
+            collected_games.push(game)
+    })
+
+    let deleteDuplicate = collected_games.filter((obj, index, self) =>
+        index === self.findIndex((o) => o._id.equals(obj._id))
+    );
+
+    if(id) {
+        const user = await Users.findById(id)
+
+        if(user.safe_content || user.safe_content === undefined)
+            deleteDuplicate = deleteDuplicate.filter((item) => item.strict !== true)
+
+        deleteDuplicate = deleteDuplicate.filter((item) => item.privacy !== true)
+
+        if(deleteDuplicate.length > 0) {
+            res.status(200).json({ 
+                result: deleteDuplicate
+            })
+        }
+        else {
+            res.status(404).json({ 
+                message: "No Available Games"
+            })
+        }
+    }
+    else {
+        deleteDuplicate = deleteDuplicate.filter((item) => item.strict === false)
+        deleteDuplicate = deleteDuplicate.filter((item) => item.privacy !== true)
+
+        if(deleteDuplicate.length > 0) {
+            res.status(200).json({ 
+                result: deleteDuplicate
+            })
+        }
+        else {
+            res.status(404).json({ 
+                message: "No Available Games"
+            })
+        }
+    }
 }
