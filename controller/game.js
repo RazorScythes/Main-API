@@ -371,7 +371,7 @@ exports.countTags = async (req, res) => {
         }
         else {
             res.status(404).json({ 
-                message: "No available videos"
+                message: "No available games"
             })
         }
     }
@@ -405,7 +405,7 @@ exports.countTags = async (req, res) => {
         }
         else {
             res.status(404).json({ 
-                message: "No available videos"
+                message: "No available games"
             })
         }
     }

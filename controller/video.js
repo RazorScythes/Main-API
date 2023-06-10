@@ -6,8 +6,7 @@ const uuid                = require('uuid');
 exports.getVideos = async (req, res) => {
     const { id } = req.body
 
-    let videos = await Video.find({}).sort({ createdAt: -1 })
-
+    let videos = await Video.find({}).sort({ createdAt: -1 }).populate('user')
     if(id) {
         const user = await Users.findById(id)
 
@@ -715,5 +714,85 @@ exports.addToWatchLater = async (req, res) => {
                 paragraph: "Please check your archive."
             }
         })
+    }
+}
+
+exports.countVideoTags = async (req, res) => {
+    const { id } = req.body
+
+    var videos = await Video.find({}).sort({ createdAt: -1 }).populate('user')
+    var tag_list = []
+
+    if(id) {
+        const user = await Users.findById(id)
+
+        if(user.safe_content || user.safe_content === undefined)
+            videos = videos.filter((item) => item.strict !== true)
+
+        videos = videos.filter((item) => item.privacy !== true)
+
+        if(videos.length > 0) {
+            videos.forEach((item) => {
+                if(item.tags.length > 0) {
+                    item.tags.forEach((tag) => {
+                        tag_list.push(tag)
+                    })
+                }
+            })
+
+            const counts = tag_list.reduce((acc, tag) => {
+                if (acc[tag]) {
+                acc[tag]++;
+                } else {
+                acc[tag] = 1;
+                }
+                return acc;
+            }, {});
+            
+            const result = Object.entries(counts).map(([tag, count]) => ({ tag, count }));
+            console.log(result)
+            res.status(200).json({
+                result: result
+            })
+        }
+        else {
+            res.status(404).json({ 
+                message: "No available videos"
+            })
+        }
+    }
+    else {
+        videos = videos.filter((item) => item.strict === false)
+        videos = videos.filter((item) => item.privacy !== true)
+
+        if(videos.length > 0) {
+            videos.forEach((item) => {
+                if(item.tags.length > 0) {
+                    item.tags.forEach((tag) => {
+                        tag_list.push(tag)
+                    })
+                }
+            })
+
+            const counts = tag_list.reduce((acc, tag) => {
+                if (acc[tag]) {
+                acc[tag]++;
+                } else {
+                acc[tag] = 1;
+                }
+                return acc;
+            }, {});
+            
+            const result = Object.entries(counts).map(([tag, count]) => ({ tag, count }));
+
+            res.status(200).json({
+                result: result
+            })
+        }
+        else {
+            res.status(404).json({ 
+                message: "No available videos"
+            })
+        }
     }
 }
