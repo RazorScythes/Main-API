@@ -401,6 +401,7 @@ function getVideoDataById(id) {
             link: video.link,
             strict: video.strict,
             privacy: video.privacy,
+            file_size: video.file_size ? video.file_size : "",
             createdAt: video.createdAt
         }
         resolve(jsonData)
@@ -657,7 +658,6 @@ exports.removeComment = async (req, res) => {
 }
 
 exports.addToWatchLater = async (req, res) => {
-    console.log(req.body)
     const { id, videoId } = req.body
 
     if(!id || !videoId) 
@@ -750,7 +750,6 @@ exports.countVideoTags = async (req, res) => {
             }, {});
             
             const result = Object.entries(counts).map(([tag, count]) => ({ tag, count }));
-            console.log(result)
             res.status(200).json({
                 result: result
             })

@@ -250,7 +250,6 @@ exports.bulkRemoveVideo = async (req, res) => {
 
     Video.deleteMany({ _id: { $in: objectIdsToDelete } })
     .then(async (result) => {
-        console.log(result)
         try {
             let videos = await Video.find({ user: id }).sort({ createdAt: -1 })
 
@@ -361,4 +360,47 @@ exports.bulkRemoveGame = async (req, res) => {
         console.log(err)
         return res.status(404).json({ variant: 'danger', message: err })
     })
+}
+
+function convertSizeToReadable(sizeInBytes) {
+    const units = ['bytes', 'KB', 'MB'];  //'GB'
+    let convertedSize = sizeInBytes;
+    let unitIndex = 0;
+  
+    while (convertedSize >= 1024 && unitIndex < units.length - 1) {
+      convertedSize /= 1024;
+      unitIndex++;
+    }
+    
+    return `${convertedSize.toFixed(2)} ${units[unitIndex]}`
+}
+
+exports.updateVideoProperties = async (req, res) => {
+    const { file_id, size } = req.body
+    
+    try {
+        const regex = new RegExp(file_id, 'i'); 
+
+        const foundDocuments = await Video.find({ link: regex });
+        
+        if(foundDocuments.length > 0) {
+            const updateVideo = await Video.findByIdAndUpdate(foundDocuments[0]._id, { file_size: convertSizeToReadable(size) }, { new: true })
+            return res.status(200).json({ 
+                variant: 'success',
+                message: "Video Uploaded Successfully"
+            });
+        }
+        else {
+            return res.status(404).json({ 
+                variant: 'danger',
+                message: "Error Uploading Videos"
+            });
+        }
+      } catch (error) {
+        console.error('Error searching documents:', error);
+        return res.status(404).json({ 
+            variant: 'danger',
+            message: "Error Uploading Videos"
+        });
+      }
 }

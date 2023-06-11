@@ -17,7 +17,8 @@ const videoSchema = new Schema({
     strict: { type: Boolean },
     privacy: { type: Boolean },
     downloadable: { type: Boolean },
-    related_videos: { type: Array }
+    related_videos: { type: Array },
+    file_size: { type: String }
 },{
     timestamps: true,
     collection: "video"
