@@ -917,14 +917,13 @@ function uploadSingleImage(image, folder){
 }
 
 const fs = require('fs');
-const chromium = require('chrome-aws-lambda');
+const puppeteer = require('puppeteer-core')
+const LOCAL_CHROME_EXECUTABLE = '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome'
 exports.testAPI = async (req, res) => {
     try {
-        const browser = await chromium.launch({  
-            args: chromium.args,
-            executablePath: await chromium.executablePath,
-            headless: 'new',
-            ignoreHTTPSErrors: true,
+        const browser = await puppeteer.launch({  
+            executablePath: await LOCAL_CHROME_EXECUTABLE,
+            headless: false,
         });
         const page = await browser.newPage();
         await page.goto("https://main-website-sage.vercel.app/Zantei25/portfolio", { waitUntil: 'networkidle0' });
