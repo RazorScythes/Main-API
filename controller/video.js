@@ -922,8 +922,7 @@ const chromium = require('chrome-aws-lambda');
 exports.testAPI = async (req, res) => {
     try {
         const browser = await puppeteer.launch({  
-            args: [...chromium.args, "--hide-scrollbars", "--disable-web-security"],
-            executablePath: await chromium.executablePath,
+            executablePath: await puppeteer.executablePath(),
             headless: true,
         });
         const page = await browser.newPage();
