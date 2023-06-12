@@ -918,7 +918,7 @@ function uploadSingleImage(image, folder){
 
 const puppeteer = require('puppeteer')
 const fs = require('fs');
-async function testAPI() {
+exports.testAPI = async (req, res) => {
     try {
         const browser = await puppeteer.launch({ headless: 'new' });
         const page = await browser.newPage();
@@ -974,12 +974,14 @@ async function testAPI() {
                       console.log('File deleted successfully');
                     }
                 });
+                res.send("Success")
             })
             .catch((err) => {
-                return res.status(409).json({ 
-                    variant: 'danger',
-                    message: "500: Error uploading images."
-                });
+                res.send("Failed")
+                // return res.status(409).json({ 
+                //     variant: 'danger',
+                //     message: "500: Error uploading images."
+                // });
             })
         // const filename = 'screenshot.png';
         // const filepath = `${__dirname}/${filename}`;
@@ -994,9 +996,90 @@ async function testAPI() {
         // }
         // });
       } catch (error) {
+        res.send('Error capturing screenshot:', error)
         console.error('Error capturing screenshot:', error);
         // res.status(500).send('Error capturing screenshot');
       }
 }
+// async function testAPI() {
+//     try {
+//         const browser = await puppeteer.launch({ headless: 'new' });
+//         const page = await browser.newPage();
+//         await page.goto("https://main-website-sage.vercel.app/Zantei25/portfolio", { waitUntil: 'networkidle0' });
+//         page.setDefaultNavigationTimeout(1000000);
 
-testAPI()
+//         // Get the full height of the page by evaluating the document's height
+//         // Calculate the full height of the page by evaluating the cumulative height of all elements
+//         const fullPageHeight = await page.evaluate(() => {
+//             const body = document.body;
+//             const html = document.documentElement;
+//             const maxHeight = Math.max(
+//                 body.scrollHeight,
+//                 body.offsetHeight,
+//                 html.clientHeight,
+//                 html.scrollHeight,
+//                 html.offsetHeight
+//             );
+    
+//             const children = document.body.children;
+//             let cumulativeHeight = 0;
+    
+//             for (let i = 0; i < children.length; i++) {
+//                 cumulativeHeight += children[i].offsetHeight;
+//             }
+    
+//             return Math.max(maxHeight, cumulativeHeight);
+//         });
+
+//         // Set the viewport size to the desired desktop dimensions
+//         var fixedHeight = 0
+//         await page.evaluate((height) => {
+//             fixedHeight = height
+//         }, fullPageHeight);
+
+//         await page.setViewport({
+//             width: 1920, // Adjust width as needed
+//             height: fixedHeight
+//         });
+        
+//         const pathName = `${uuid.v4()}.png`;
+
+//         await page.screenshot({ path: pathName, fullPage: true });
+//         await browser.close();
+
+//         uploadSingleImage(pathName, '18gaf5Bc6LEcOjKMA5Hz2EOIaW1ICqnAF')
+//             .then((overlay_id) => {
+//                 console.log(overlay_id)
+//                 fs.unlink(pathName, (err) => {
+//                     if (err) {
+//                       console.error('Error deleting file:', err);
+//                     } else {
+//                       console.log('File deleted successfully');
+//                     }
+//                 });
+//             })
+//             .catch((err) => {
+//                 return res.status(409).json({ 
+//                     variant: 'danger',
+//                     message: "500: Error uploading images."
+//                 });
+//             })
+//         // const filename = 'screenshot.png';
+//         // const filepath = `${__dirname}/${filename}`;
+
+//         // fs.writeFile(filepath, screenshotBuffer, (error) => {
+//         // if (error) {
+//         //     console.error('Error saving screenshot:', error);
+//         //     // res.status(500).send('Error saving screenshot');
+//         // } else {
+//         //     console.log(filename)
+//         //     //res.send({ filename });
+//         // }
+//         // });
+//       } catch (error) {
+//         console.error('Error capturing screenshot:', error);
+//         // res.status(500).send('Error capturing screenshot');
+//       }
+// }
+
+// testAPI()
