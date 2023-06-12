@@ -922,7 +922,7 @@ const { chromium } = require('playwright');
 exports.testAPI = async (req, res) => {
     try {
         const browser = await chromium.launch({  
-            headless: 'new',
+            headless: true,
         });
         const page = await browser.newPage();
         await page.goto("https://main-website-sage.vercel.app/Zantei25/portfolio", { waitUntil: 'networkidle0' });
