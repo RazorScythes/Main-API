@@ -921,11 +921,8 @@ const fs = require('fs');
 const { chromium } = require('playwright');
 exports.testAPI = async (req, res) => {
     try {
-        const browser = await puppeteer.launch({  
-            args: chromium.args,
-            executablePath: await chromium.executablePath,
-            headless: chromium.headless,
-            ignoreHTTPSErrors: true,
+        const browser = await chromium.launch({  
+            headless: 'new',
         });
         const page = await browser.newPage();
         await page.goto("https://main-website-sage.vercel.app/Zantei25/portfolio", { waitUntil: 'networkidle0' });
