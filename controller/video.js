@@ -918,7 +918,6 @@ function uploadSingleImage(image, folder){
 
 const puppeteer = require('puppeteer')
 const fs = require('fs');
-const chromium = require('chrome-aws-lambda');
 exports.testAPI = async (req, res) => {
     try {
         const browser = await puppeteer.launch({  
