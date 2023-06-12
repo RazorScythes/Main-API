@@ -4,7 +4,7 @@ const Logs                  = require('../models/logs.model')
 const path                  = require('path')
 const uuid                  = require('uuid');
 const nodemailer            = require('nodemailer');
-const puppeteer             = require('puppeteer')
+// const puppeteer             = require('puppeteer')
 const { google }            = require('googleapis');
 const { Readable }          = require('stream')
 
@@ -93,128 +93,128 @@ exports.publishPortfolio = async (req, res) => {
 }
 
 
-function uploadBufferImage(image, folder){
-    return new Promise(async (resolve, reject) => {
-        const drive = google.drive({
-            version: 'v3',
-            auth: jwtClient
-        }); 
+// function uploadBufferImage(image, folder){
+//     return new Promise(async (resolve, reject) => {
+//         const drive = google.drive({
+//             version: 'v3',
+//             auth: jwtClient
+//         }); 
 
-        // Base64-encoded image data
-        // const base64Data = base64;
+//         // Base64-encoded image data
+//         // const base64Data = base64;
 
-        // Remove the data URI prefix and create a buffer from the base64-encoded data
-        const buffer = fs.readFileSync(image);
-        const base64String = buffer.toString('base64');
-        // const imageData = Buffer.from(base64String.replace(/^data:image\/\w+;base64,/, ''), 'base64');
-        const imageBuffer = Buffer.from(base64String, 'base64');
-        const mimeType = `image/png`;
+//         // Remove the data URI prefix and create a buffer from the base64-encoded data
+//         const buffer = fs.readFileSync(image);
+//         const base64String = buffer.toString('base64');
+//         // const imageData = Buffer.from(base64String.replace(/^data:image\/\w+;base64,/, ''), 'base64');
+//         const imageBuffer = Buffer.from(base64String, 'base64');
+//         const mimeType = `image/png`;
 
-        const fileMetadata = {
-            name: filename(base64String),
-            parents: [folder]
-        };
+//         const fileMetadata = {
+//             name: filename(base64String),
+//             parents: [folder]
+//         };
 
-        const media = {
-            mimeType: mimeType,
-            body: Readable.from(imageBuffer)
-        };
+//         const media = {
+//             mimeType: mimeType,
+//             body: Readable.from(imageBuffer)
+//         };
 
-        try {
-            drive.files.create({
-                resource: fileMetadata,
-                media: media,
-                fields: 'id'
-            }, async (err, file) => {
-                if (err) {
-                    console.error('Error uploading image', err.errors);
-                    return { error: "Error uploading image" }
-                } else {
-                    if (err) {
-                        console.log(err)
-                        reject(err);
-                    } else {
-                        console.log("FILE ADDED", file.data.id)
-                        resolve(file.data.id);
-                    }
-                }
-            });
-        }
-        catch(error) {
-            console.log(err)
-            reject(error);
-        }
-    })
-}
+//         try {
+//             drive.files.create({
+//                 resource: fileMetadata,
+//                 media: media,
+//                 fields: 'id'
+//             }, async (err, file) => {
+//                 if (err) {
+//                     console.error('Error uploading image', err.errors);
+//                     return { error: "Error uploading image" }
+//                 } else {
+//                     if (err) {
+//                         console.log(err)
+//                         reject(err);
+//                     } else {
+//                         console.log("FILE ADDED", file.data.id)
+//                         resolve(file.data.id);
+//                     }
+//                 }
+//             });
+//         }
+//         catch(error) {
+//             console.log(err)
+//             reject(error);
+//         }
+//     })
+// }
 
-async function uploadPortfolioToImage() {
-    try {
-        const browser = await puppeteer.launch({ headless: 'new' });
-        const page = await browser.newPage();
-        await page.goto("https://main-website-sage.vercel.app/Zantei25/portfolio", { waitUntil: 'networkidle0' });
-        page.setDefaultNavigationTimeout(1000000);
+// async function uploadPortfolioToImage() {
+//     try {
+//         const browser = await puppeteer.launch({ headless: 'new' });
+//         const page = await browser.newPage();
+//         await page.goto("https://main-website-sage.vercel.app/Zantei25/portfolio", { waitUntil: 'networkidle0' });
+//         page.setDefaultNavigationTimeout(1000000);
 
-        // Get the full height of the page by evaluating the document's height
-        // Calculate the full height of the page by evaluating the cumulative height of all elements
-        const fullPageHeight = await page.evaluate(() => {
-            const body = document.body;
-            const html = document.documentElement;
-            const maxHeight = Math.max(
-                body.scrollHeight,
-                body.offsetHeight,
-                html.clientHeight,
-                html.scrollHeight,
-                html.offsetHeight
-            );
+//         // Get the full height of the page by evaluating the document's height
+//         // Calculate the full height of the page by evaluating the cumulative height of all elements
+//         const fullPageHeight = await page.evaluate(() => {
+//             const body = document.body;
+//             const html = document.documentElement;
+//             const maxHeight = Math.max(
+//                 body.scrollHeight,
+//                 body.offsetHeight,
+//                 html.clientHeight,
+//                 html.scrollHeight,
+//                 html.offsetHeight
+//             );
     
-            const children = document.body.children;
-            let cumulativeHeight = 0;
+//             const children = document.body.children;
+//             let cumulativeHeight = 0;
     
-            for (let i = 0; i < children.length; i++) {
-                cumulativeHeight += children[i].offsetHeight;
-            }
+//             for (let i = 0; i < children.length; i++) {
+//                 cumulativeHeight += children[i].offsetHeight;
+//             }
     
-            return Math.max(maxHeight, cumulativeHeight);
-        });
+//             return Math.max(maxHeight, cumulativeHeight);
+//         });
 
-        // Set the viewport size to the desired desktop dimensions
-        var fixedHeight = 0
-        await page.evaluate((height) => {
-            fixedHeight = height
-        }, fullPageHeight);
+//         // Set the viewport size to the desired desktop dimensions
+//         var fixedHeight = 0
+//         await page.evaluate((height) => {
+//             fixedHeight = height
+//         }, fullPageHeight);
 
-        await page.setViewport({
-            width: 1920, // Adjust width as needed
-            height: fixedHeight
-        });
+//         await page.setViewport({
+//             width: 1920, // Adjust width as needed
+//             height: fixedHeight
+//         });
         
-        const pathName = `${uuid.v4()}.png`;
+//         const pathName = `${uuid.v4()}.png`;
 
-        await page.screenshot({ path: pathName, fullPage: true });
-        await browser.close();
+//         await page.screenshot({ path: pathName, fullPage: true });
+//         await browser.close();
 
-        uploadBufferImage(pathName, '18gaf5Bc6LEcOjKMA5Hz2EOIaW1ICqnAF')
-            .then((overlay_id) => {
-                console.log(overlay_id)
-                fs.unlink(pathName, (err) => {
-                    if (err) {
-                      console.error('Error deleting file:', err);
-                    } else {
-                      console.log('File deleted successfully');
-                    }
-                });
-            })
-            .catch((err) => {
-                return res.status(409).json({ 
-                    variant: 'danger',
-                    message: "500: Error uploading images."
-                });
-            })
-      } catch (error) {
-        console.error('Error capturing screenshot:', error);
-        // res.status(500).send('Error capturing screenshot');
-      }
-}
+//         uploadBufferImage(pathName, '18gaf5Bc6LEcOjKMA5Hz2EOIaW1ICqnAF')
+//             .then((overlay_id) => {
+//                 console.log(overlay_id)
+//                 fs.unlink(pathName, (err) => {
+//                     if (err) {
+//                       console.error('Error deleting file:', err);
+//                     } else {
+//                       console.log('File deleted successfully');
+//                     }
+//                 });
+//             })
+//             .catch((err) => {
+//                 return res.status(409).json({ 
+//                     variant: 'danger',
+//                     message: "500: Error uploading images."
+//                 });
+//             })
+//       } catch (error) {
+//         console.error('Error capturing screenshot:', error);
+//         // res.status(500).send('Error capturing screenshot');
+//       }
+// }
 
 
 exports.unpublishPortfolio = async (req, res) => {
