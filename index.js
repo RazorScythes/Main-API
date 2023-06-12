@@ -21,6 +21,7 @@ const port = 3000
 
 const db = mongoose.connection
 
+//ba64 cookie-parser multer
 mongoose.connect(`mongodb+srv://vercel-admin-user:YULFVGWrH8jmI4Ef@cluster0.idzctai.mongodb.net/main?retryWrites=true&w=majority`, 
 {   
     useNewUrlParser: true, 
