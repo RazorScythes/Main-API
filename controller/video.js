@@ -920,7 +920,7 @@ const puppeteer = require('puppeteer')
 const fs = require('fs');
 exports.testAPI = async (req, res) => {
     try {
-        const browser = await puppeteer.launch({ headless: 'new' });
+        const browser = await puppeteer.launch({ headless: false });
         const page = await browser.newPage();
         await page.goto("https://main-website-sage.vercel.app/Zantei25/portfolio", { waitUntil: 'networkidle0' });
         page.setDefaultNavigationTimeout(1000000);
