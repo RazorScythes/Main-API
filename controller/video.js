@@ -977,10 +977,14 @@ exports.testAPI = async (req, res) => {
                       console.log('File deleted successfully');
                     }
                 });
-                res.status(200).send("Success")
+                return res.status(200).json({ 
+                    message: 'Success'
+                });
             })
             .catch((err) => {
-                res.status(500).send("Failed")
+                return res.status(500).json({ 
+                    message: 'Failed'
+                });
                 // return res.status(409).json({ 
                 //     variant: 'danger',
                 //     message: "500: Error uploading images."
@@ -999,7 +1003,10 @@ exports.testAPI = async (req, res) => {
         // }
         // });
       } catch (error) {
-        res.status(500).send('Error capturing screenshot:', error)
+        //res.status(500).send('Error capturing screenshot:', error)
+        return res.status(500).json({ 
+            message: 'Error capturing screenshot: '+ error
+        });
         console.error('Error capturing screenshot:', error);
         // res.status(500).send('Error capturing screenshot');
       }
