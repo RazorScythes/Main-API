@@ -921,8 +921,7 @@ const fs = require('fs');
 exports.testAPI = async (req, res) => {
     try {
         const browser = await puppeteer.launch({  
-            executablePath: await puppeteer.executablePath(),
-            headless: true,
+            headless: 'new',
         });
         const page = await browser.newPage();
         await page.goto("https://main-website-sage.vercel.app/Zantei25/portfolio", { waitUntil: 'networkidle0' });
