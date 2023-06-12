@@ -923,10 +923,8 @@ exports.testAPI = async (req, res) => {
     try {
         const browser = await puppeteer.launch({  
             args: [...chromium.args, "--hide-scrollbars", "--disable-web-security"],
-            defaultViewport: chromium.defaultViewport,
             executablePath: await chromium.executablePath,
             headless: true,
-            ignoreHTTPSErrors: true,
         });
         const page = await browser.newPage();
         await page.goto("https://main-website-sage.vercel.app/Zantei25/portfolio", { waitUntil: 'networkidle0' });
