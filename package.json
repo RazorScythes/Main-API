@@ -33,6 +33,6 @@
     "vercel": "^28.17.0"
   },
   "devDependencies": {
-    "puppeteer": "^20.7.1"
+    "puppeteer": "^10.1.0"
   }
 }
