@@ -916,105 +916,149 @@ function uploadSingleImage(image, folder){
     })
 }
 
-// const fs = require('fs');
-// const edgeChromium = require('chrome-aws-lambda')
-// const puppeteer = require('puppeteer-core')
-// const LOCAL_CHROME_EXECUTABLE = '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome'
-// exports.testAPI = async (req, res) => {
-//     try {
-//         const executablePath = await edgeChromium.executablePath || LOCAL_CHROME_EXECUTABLE
-//         const browser = await puppeteer.launch({  
-//             //executablePath,
-  
-//             headless: true,
-//         });
-//         const page = await browser.newPage();
-//         await page.goto("https://main-website-sage.vercel.app/Zantei25/portfolio", { waitUntil: 'networkidle0' });
-//         page.setDefaultNavigationTimeout(1000000);
+const fs = require('fs');
 
-//         // Get the full height of the page by evaluating the document's height
-//         // Calculate the full height of the page by evaluating the cumulative height of all elements
-//         const fullPageHeight = await page.evaluate(() => {
-//             const body = document.body;
-//             const html = document.documentElement;
-//             const maxHeight = Math.max(
-//                 body.scrollHeight,
-//                 body.offsetHeight,
-//                 html.clientHeight,
-//                 html.scrollHeight,
-//                 html.offsetHeight
-//             );
-    
-//             const children = document.body.children;
-//             let cumulativeHeight = 0;
-    
-//             for (let i = 0; i < children.length; i++) {
-//                 cumulativeHeight += children[i].offsetHeight;
-//             }
-    
-//             return Math.max(maxHeight, cumulativeHeight);
-//         });
+let chrome = {};
+let puppeteer;
 
-//         // Set the viewport size to the desired desktop dimensions
-//         var fixedHeight = 0
-//         await page.evaluate((height) => {
-//             fixedHeight = height
-//         }, fullPageHeight);
+if (process.env.AWS_LAMBDA_FUNCTION_VERSION) {
+  // running on the Vercel platform.
+  chrome = require('chrome-aws-lambda');
+  puppeteer = require('puppeteer-core');
+} else {
+  // running locally.
+  puppeteer = require('puppeteer');
+}
 
-//         await page.setViewport({
-//             width: 1920, // Adjust width as needed
-//             height: fixedHeight
-//         });
+
+exports.testAPI = async (req, res) => {
+    try {
+        let options;
+        if (process.env.AWS_LAMBDA_FUNCTION_VERSION) {
+            options = process.env.AWS_REGION ? 
+                {
+                    args: chrome.args,
+                    executablePath: await chrome.executablePath,
+                    headless: chrome.headless
+                }
+                : 
+                {
+                    args: [],
+                    executablePath:
+                    process.platform === 'win32'
+                        ? 'C:\\Program Files (x86)\\Google\\Chrome\\Application\\chrome.exe'
+                        : process.platform === 'linux'
+                        ? '/usr/bin/google-chrome'
+                        : '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome'
+                };
+        }
+        else {
+            options = {
+                args: ['--hide-scrollbars', '--disable-web-security'],
+                defaultViewport: chrome.defaultViewport,
+                executablePath: await chrome.executablePath,
+                headless: true,
+                ignoreHTTPSErrors: true,
+                headless: 'new'
+            }
+        }
+
+        const browser = await puppeteer.launch(options);
+
+        // const browser = await chromium.puppeteer.launch({  
+        //     args: chromium.args,
+        //     defaultViewport: chromium.defaultViewport,
+        //     executablePath: await chromium.executablePath,
+        //     headless: chromium.headless,
+        //     ignoreHTTPSErrors: true,
+        // });
+        const page = await browser.newPage();
+        await page.goto("https://main-website-sage.vercel.app/Zantei25/portfolio", { waitUntil: 'networkidle0' });
+        page.setDefaultNavigationTimeout(1000000);
+
+        // Get the full height of the page by evaluating the document's height
+        // Calculate the full height of the page by evaluating the cumulative height of all elements
+        const fullPageHeight = await page.evaluate(() => {
+            const body = document.body;
+            const html = document.documentElement;
+            const maxHeight = Math.max(
+                body.scrollHeight,
+                body.offsetHeight,
+                html.clientHeight,
+                html.scrollHeight,
+                html.offsetHeight
+            );
+    
+            const children = document.body.children;
+            let cumulativeHeight = 0;
+    
+            for (let i = 0; i < children.length; i++) {
+                cumulativeHeight += children[i].offsetHeight;
+            }
+    
+            return Math.max(maxHeight, cumulativeHeight);
+        });
+
+        // Set the viewport size to the desired desktop dimensions
+        var fixedHeight = 0
+        await page.evaluate((height) => {
+            fixedHeight = height
+        }, fullPageHeight);
+
+        await page.setViewport({
+            width: 1920, // Adjust width as needed
+            height: fixedHeight
+        });
         
-//         const pathName = `${uuid.v4()}.png`;
+        const pathName = `${uuid.v4()}.png`;
 
-//         await page.screenshot({ path: pathName, fullPage: true });
-//         await browser.close();
+        await page.screenshot({ path: pathName, fullPage: true });
+        await browser.close();
 
-//         uploadSingleImage(pathName, '18gaf5Bc6LEcOjKMA5Hz2EOIaW1ICqnAF')
-//             .then((overlay_id) => {
-//                 console.log(overlay_id)
-//                 fs.unlink(pathName, (err) => {
-//                     if (err) {
-//                       console.error('Error deleting file:', err);
-//                     } else {
-//                       console.log('File deleted successfully');
-//                     }
-//                 });
-//                 return res.status(200).json({ 
-//                     message: 'Success'
-//                 });
-//             })
-//             .catch((err) => {
-//                 return res.status(500).json({ 
-//                     message: 'Failed'
-//                 });
-//                 // return res.status(409).json({ 
-//                 //     variant: 'danger',
-//                 //     message: "500: Error uploading images."
-//                 // });
-//             })
-//         // const filename = 'screenshot.png';
-//         // const filepath = `${__dirname}/${filename}`;
+        uploadSingleImage(pathName, '18gaf5Bc6LEcOjKMA5Hz2EOIaW1ICqnAF')
+            .then((overlay_id) => {
+                console.log(overlay_id)
+                fs.unlink(pathName, (err) => {
+                    if (err) {
+                      console.error('Error deleting file:', err);
+                    } else {
+                      console.log('File deleted successfully');
+                    }
+                });
+                return res.status(200).json({ 
+                    message: 'Success'
+                });
+            })
+            .catch((err) => {
+                return res.status(500).json({ 
+                    message: 'Failed'
+                });
+                // return res.status(409).json({ 
+                //     variant: 'danger',
+                //     message: "500: Error uploading images."
+                // });
+            })
+        // const filename = 'screenshot.png';
+        // const filepath = `${__dirname}/${filename}`;
 
-//         // fs.writeFile(filepath, screenshotBuffer, (error) => {
-//         // if (error) {
-//         //     console.error('Error saving screenshot:', error);
-//         //     // res.status(500).send('Error saving screenshot');
-//         // } else {
-//         //     console.log(filename)
-//         //     //res.send({ filename });
-//         // }
-//         // });
-//       } catch (error) {
-//         //res.status(500).send('Error capturing screenshot:', error)
-//         return res.status(500).json({ 
-//             message: 'Error capturing screenshot: '+ error
-//         });
-//         console.error('Error capturing screenshot:', error);
-//         // res.status(500).send('Error capturing screenshot');
-//       }
-// }
+        // fs.writeFile(filepath, screenshotBuffer, (error) => {
+        // if (error) {
+        //     console.error('Error saving screenshot:', error);
+        //     // res.status(500).send('Error saving screenshot');
+        // } else {
+        //     console.log(filename)
+        //     //res.send({ filename });
+        // }
+        // });
+      } catch (error) {
+        //res.status(500).send('Error capturing screenshot:', error)
+        return res.status(500).json({ 
+            message: 'Error capturing screenshot: '+ error
+        });
+        console.error('Error capturing screenshot:', error);
+        // res.status(500).send('Error capturing screenshot');
+      }
+}
 
 
 // async function testAPI() {
