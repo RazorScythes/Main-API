@@ -3,6 +3,19 @@ const Game                = require('../models/games.model')
 const Users               = require('../models/user.model')
 const mongoose            = require('mongoose');
 
+function convertSizeToReadable(sizeInBytes) {
+    const units = ['bytes', 'KB', 'MB'];  //'GB'
+    let convertedSize = sizeInBytes;
+    let unitIndex = 0;
+  
+    while (convertedSize >= 1024 && unitIndex < units.length - 1) {
+      convertedSize /= 1024;
+      unitIndex++;
+    }
+    
+    return `${convertedSize.toFixed(2)} ${units[unitIndex]}`
+}
+
 exports.getUserVideo = async (req, res) => {
     const { id } = req.body
 
@@ -51,14 +64,14 @@ exports.getUserGame = async (req, res) => {
 }
 
 exports.uploadVideo = async (req, res) => {
-    const { id, data } = req.body
+    const { id, data, size } = req.body
 
     if(!id) return res.status(404).json({ 
                 variant: 'danger',
                 message: "Error 404: User not found."
             });
 
-    const newVideo = new Video({ user: id, ...data })
+    const newVideo = new Video({ user: id, ...data, file_size: size ? convertSizeToReadable(size) : 0 })
 
     await newVideo.save()
     .then(async () => {
@@ -360,19 +373,6 @@ exports.bulkRemoveGame = async (req, res) => {
         console.log(err)
         return res.status(404).json({ variant: 'danger', message: err })
     })
-}
-
-function convertSizeToReadable(sizeInBytes) {
-    const units = ['bytes', 'KB', 'MB'];  //'GB'
-    let convertedSize = sizeInBytes;
-    let unitIndex = 0;
-  
-    while (convertedSize >= 1024 && unitIndex < units.length - 1) {
-      convertedSize /= 1024;
-      unitIndex++;
-    }
-    
-    return `${convertedSize.toFixed(2)} ${units[unitIndex]}`
 }
 
 exports.updateVideoProperties = async (req, res) => {
