@@ -19,14 +19,17 @@ const allowCors = fn => async (req, res) => {
     return await fn(req, res)
 }
 
-const { updateVideoProperties, getUserVideo, getUserGame, uploadVideo, uploadGame, editVideo, editGame, removeVideo, removeGame, bulkRemoveVideo, bulkRemoveGame, changePrivacyById, changeStrictById, changeDownloadById, changeGameStrictById, changeGamePrivacyById } = require('../controller/uploads')
+const { updateVideoProperties, getUserVideo, getUserGame, getUserBlog, uploadVideo, uploadGame, uploadBlog, editVideo, editGame, editBlog, removeVideo, removeGame, bulkRemoveVideo, bulkRemoveGame, changePrivacyById, changeStrictById, changeDownloadById, changeGameStrictById, changeGamePrivacyById } = require('../controller/uploads')
 
 router.post('/getUserVideo', allowCors(getUserVideo))
 router.post('/getUserGame', allowCors(getUserGame))
+router.post('/getUserBlog', allowCors(getUserBlog))
 router.post('/uploadVideo', allowCors(uploadVideo))
 router.post('/uploadGame', allowCors(uploadGame))
+router.post('/uploadBlog', allowCors(uploadBlog))
 router.post('/editVideo', allowCors(editVideo))
 router.post('/editGame', allowCors(editGame))
+router.post('/editBlog', allowCors(editBlog))
 router.post('/removeVideo', allowCors(removeVideo))
 router.post('/bulkRemoveVideo', allowCors(bulkRemoveVideo))
 router.post('/removeGame', allowCors(removeGame))

@@ -159,6 +159,7 @@ exports.publishPortfolio = async (req, res) => {
 //         const fullPageHeight = await page.evaluate(() => {
 //             const body = document.body;
 //             const html = document.documentElement;
+
 //             const maxHeight = Math.max(
 //                 body.scrollHeight,
 //                 body.offsetHeight,
