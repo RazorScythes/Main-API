@@ -230,30 +230,43 @@ exports.getUserBlog = async (req, res) => {
 exports.uploadVideo = async (req, res) => {
     const { id, data, size } = req.body
 
+    var find_duplication = await Video.find({ link: data.link })
+
     if(!id) return res.status(404).json({ 
                 variant: 'danger',
                 message: "Error 404: User not found."
             });
+    
+    if(find_duplication.length === 0) {
+        const newVideo = new Video({ user: id, ...data, file_size: size ? convertSizeToReadable(size) : 0 })
 
-    const newVideo = new Video({ user: id, ...data, file_size: size ? convertSizeToReadable(size) : 0 })
-
-    await newVideo.save()
-    .then(async () => {
+        await newVideo.save()
+        .then(async () => {
+            let video = await Video.find({ user: id }).sort({ createdAt: -1 })
+    
+            res.status(200).json({ 
+                result: video,
+                variant: 'success',
+                message: "Video Uploaded Successfully"
+            });
+        })
+        .catch((err) => {
+            console.log(err)
+            return res.status(404).json({ 
+                variant: 'danger',
+                message: "Error Uploading Videos"
+            });
+        });
+    }
+    else {
         let video = await Video.find({ user: id }).sort({ createdAt: -1 })
-
-        res.status(200).json({ 
+    
+        res.status(404).json({ 
             result: video,
-            variant: 'success',
-            message: "Video Uploaded Successfully"
-        });
-    })
-    .catch((err) => {
-        console.log(err)
-        return res.status(404).json({ 
             variant: 'danger',
-            message: "Error Uploading Videos"
+            message: "Video already uploaded"
         });
-    });
+    }
 }
 
 exports.uploadGame = async (req, res) => {
