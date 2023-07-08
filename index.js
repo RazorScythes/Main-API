@@ -15,6 +15,7 @@ const logs_router               = require('./api/logs')
 const video_router              = require('./api/video')
 const upload_router             = require('./api/uploads')
 const game_router               = require('./api/game')
+const blog_router               = require('./api/blogs')
 
 const app = express()
 const port = 3000
@@ -101,7 +102,7 @@ app.use('/logs', logs_router)
 app.use('/video', video_router)
 app.use('/uploads', upload_router)
 app.use('/game', game_router)
-
+app.use('/blogs', blog_router)
 /*
     Creating Admin by Default
 */

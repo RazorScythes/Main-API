@@ -642,14 +642,25 @@ exports.uploadComment = async (req, res) => {
    
     Video.findByIdAndUpdate(id, video, { new: true }).populate('user')
     .then((updated) => {
-        let sorted = updated.comment.sort(function(a, b) {
-            var c = new Date(a.date);
-            var d = new Date(b.date);
-            return d-c;
-        });
-        res.status(200).json({ 
-            comments: sorted
+        var collection = []
+        updated.comment.forEach((c) => {
+            collection.push(getVideoCommentInfo(c))
         })
+        Promise.all(collection)
+        .then((comments_result) => {
+            let sorted = comments_result.sort(function(a, b) {
+                var c = new Date(a.date);
+                var d = new Date(b.date);
+                return d-c;
+            });
+            res.status(200).json({ 
+                comments: sorted
+            })
+        })
+        .catch((e) => {
+            console.log(e)
+            res.status(409).json({ message: e.message });
+        });
     })
     .catch((err) => {
         return res.status(404).json({ variant: 'danger', message: err })
@@ -669,14 +680,25 @@ exports.removeComment = async (req, res) => {
 
     Video.findByIdAndUpdate(parent_id, video, { new: true }).populate('user')
     .then((updated) => {
-        let sorted = updated.comment.sort(function(a, b) {
-            var c = new Date(a.date);
-            var d = new Date(b.date);
-            return d-c;
-        });
-        res.status(200).json({ 
-            comments: sorted
+        var collection = []
+        updated.comment.forEach((c) => {
+            collection.push(getVideoCommentInfo(c))
         })
+        Promise.all(collection)
+        .then((comments_result) => {
+            let sorted = comments_result.sort(function(a, b) {
+                var c = new Date(a.date);
+                var d = new Date(b.date);
+                return d-c;
+            });
+            res.status(200).json({ 
+                comments: sorted
+            })
+        })
+        .catch((e) => {
+            console.log(e)
+            res.status(409).json({ message: e.message });
+        });
     })
     .catch((err) => {
         console.log(err)
