@@ -46,7 +46,7 @@ exports.getVideos = async (req, res) => {
 exports.addOneLikes = async (req, res) => {
     const { id, likes, dislikes } = req.body
 
-    if(!id) return res.status(404).json({ variant: 'danger', message: err })
+    if(!id) return res.status(404).json({ variant: 'danger', message: 'invalid videoId' })
 
     try {
         Video.findByIdAndUpdate(id, { likes: likes, dislikes: dislikes }, { new: true })
@@ -90,7 +90,7 @@ exports.addOneDislikes = async (req, res) => {
 exports.addOneViews = async (req, res) => {
     const { id, videoId } = req.body
 
-    if(!videoId) return res.status(404).json({ variant: 'danger', message: err })
+    if(!videoId) return res.status(404).json({ variant: 'danger', message: 'invalid videoId' })
 
     try {
         let video = await Video.findById(videoId)

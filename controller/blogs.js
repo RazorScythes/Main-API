@@ -227,3 +227,169 @@ exports.removeBlogComment = async (req, res) => {
         return res.status(404).json({ variant: 'danger', message: err })
     })
 }
+
+exports.countBlogCategories = async (req, res) => {
+    const { id } = req.body
+
+    var blogs = await Blog.find({}).sort({ createdAt: -1 }).populate('user')
+    var categories = []
+
+    if(id) {
+        const user = await Users.findById(id)
+
+        if(user.safe_content || user.safe_content === undefined)
+            blogs = blogs.filter((item) => item.strict !== true)
+
+        blogs = blogs.filter((item) => item.privacy !== true)
+
+        if(blogs.length > 0) {
+            blogs.forEach((item) => {
+                categories.push(item.categories)
+            })
+
+            const counts = categories.reduce((acc, category) => {
+                if (acc[category]) {
+                acc[category]++;
+                } else {
+                acc[category] = 1;
+                }
+                return acc;
+            }, {});
+            
+            const result = Object.entries(counts).map(([category, count]) => ({ category, count }));
+            res.status(200).json({
+                result: result
+            })
+        }
+        else {
+            res.status(404).json({ 
+                message: "No available categories"
+            })
+        }
+    }
+    else {
+        blogs = blogs.filter((item) => item.strict === false)
+        blogs = blogs.filter((item) => item.privacy !== true)
+
+        if(blogs.length > 0) {
+            blogs.forEach((item) => {
+                categories.push(item.categories)
+            })
+
+            const counts = categories.reduce((acc, category) => {
+                if (acc[category]) {
+                acc[category]++;
+                } else {
+                acc[category] = 1;
+                }
+                return acc;
+            }, {});
+            
+            const result = Object.entries(counts).map(([category, count]) => ({ category, count }));
+
+            res.status(200).json({
+                result: result
+            })
+        }
+        else {
+            res.status(404).json({ 
+                message: "No available categories"
+            })
+        }
+    }
+}
+
+exports.addOneBlogViews = async (req, res) => {
+    const { id, blogId } = req.body
+
+    if(!blogId) return res.status(404).json({ variant: 'danger', message: 'invalid blogId' })
+
+    try {
+        let blog = await Blog.findById(blogId)
+
+        let duplicate_id = false
+
+        blog.views.some((item) => {
+            if(item === id) {
+                duplicate_id = true
+                return true
+            }
+        })
+
+        if(!duplicate_id) {
+            blog.views.push(id)
+
+            Blog.findByIdAndUpdate(blogId, blog, { new: true })
+                .then(() => {
+                    res.status(200)
+                })
+                .catch((err) => {
+                    return res.status(404).json({ variant: 'danger', message: err })
+                })
+        }
+
+        res.status(200)
+    }
+    catch (err) {
+        console.log(err)
+        return res.status(404).json({ variant: 'danger', message: 'invalid blogId' })
+    }
+}
+
+exports.addOneBlogLikes = async (req, res) => {
+    const { userId, id, likes } = req.body
+
+    if(!id) return res.status(404).json({ variant: 'danger', message: 'invalid blogId' })
+
+    try {
+        Blog.findByIdAndUpdate(id, { likes: likes }, { new: true })
+            .then(async () => {
+                let blogs = await Blog.find({}).sort({ createdAt: -1 }).populate('user')
+
+                if(userId) {
+                    const user = await Users.findById(userId)
+
+                    if(user.safe_content || user.safe_content === undefined)
+                        blogs = blogs.filter((item) => item.strict !== true)
+
+                    blogs = blogs.filter((item) => item.privacy !== true)
+
+                    if(blogs.length > 0) {
+                        res.status(200).json({ 
+                            result: blogs
+                        })
+                    }
+                    else {
+                        res.status(404).json({ 
+                            message: "No available blogs"
+                        })
+                    }
+                }
+                else {
+                    blogs = blogs.filter((item) => item.strict === false)
+                    blogs = blogs.filter((item) => item.privacy !== true)
+
+                    if(blogs.length > 0) {
+                        res.status(200).json({ 
+                            result: blogs
+                        })
+                    }
+                    else {
+                        res.status(404).json({ 
+                            message: "No available blogs"
+                        })
+                    }
+                }
+                res.status(200)
+            })
+            .catch((err) => {
+                return res.status(404).json({ variant: 'danger', message: err })
+            })
+
+        res.status(200)
+    }
+    catch (err) {
+        console.log(err)
+        return res.status(404).json({ variant: 'danger', message: 'invalid blogId' })
+    }
+}
