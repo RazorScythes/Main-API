@@ -20,6 +20,7 @@ exports.getGameByID = async (req, res) => {
             avatar: game.user.avatar,
             game
         }
+        result.game['user'] = {}
 
         if(user) {
             if(user.safe_content || user.safe_content === undefined) {
@@ -58,8 +59,17 @@ exports.getGames = async (req, res) => {
         games = games.filter((item) => item.privacy !== true)
 
         if(games.length > 0) {
+            const collection = []
+            games.map(obj => {
+                obj['user'] = {
+                    username: obj.user.username,
+                    avatar: obj.user.avatar
+                }
+                collection.push(obj);
+            });
+
             res.status(200).json({ 
-                result: games
+                result: collection
             })
         }
         else {
@@ -73,8 +83,17 @@ exports.getGames = async (req, res) => {
         games = games.filter((item) => item.privacy !== true)
 
         if(games.length > 0) {
+            const collection = []
+            games.map(obj => {
+                obj['user'] = {
+                    username: obj.user.username,
+                    avatar: obj.user.avatar
+                }
+                collection.push(obj);
+            });
+
             res.status(200).json({ 
-                result: games
+                result: collection
             })
         }
         else {
@@ -163,7 +182,11 @@ function getRandomIndices(array, loopCount) {
 
 function getGameDataById(id) {
     return new Promise(async (resolve) => {
-        const game = await Game.findById(id)
+        var game = await Game.findById(id).populate('user')
+        game['user'] = {
+            username: game.user.username,
+            avatar: game.user.avatar
+        }
         resolve(game)
     });
 }
@@ -439,8 +462,17 @@ exports.getGameByTag = async (req, res) => {
         deleteDuplicate = deleteDuplicate.filter((item) => item.privacy !== true)
 
         if(deleteDuplicate.length > 0) {
+            const collection = []
+            deleteDuplicate.map(obj => {
+                obj['user'] = {
+                    username: obj.user.username,
+                    avatar: obj.user.avatar
+                }
+                collection.push(obj);
+            });
+
             res.status(200).json({ 
-                result: deleteDuplicate
+                result: collection
             })
         }
         else {
@@ -454,8 +486,17 @@ exports.getGameByTag = async (req, res) => {
         deleteDuplicate = deleteDuplicate.filter((item) => item.privacy !== true)
 
         if(deleteDuplicate.length > 0) {
+            const collection = []
+            deleteDuplicate.map(obj => {
+                obj['user'] = {
+                    username: obj.user.username,
+                    avatar: obj.user.avatar
+                }
+                collection.push(obj);
+            });
+
             res.status(200).json({ 
-                result: deleteDuplicate
+                result: collection
             })
         }
         else {
@@ -497,8 +538,17 @@ exports.getGameByDeveloper = async (req, res) => {
         deleteDuplicate = deleteDuplicate.filter((item) => item.privacy !== true)
 
         if(deleteDuplicate.length > 0) {
+            const collection = []
+            deleteDuplicate.map(obj => {
+                obj['user'] = {
+                    username: obj.user.username,
+                    avatar: obj.user.avatar
+                }
+                collection.push(obj);
+            });
+
             res.status(200).json({ 
-                result: deleteDuplicate
+                result: collection
             })
         }
         else {
@@ -512,8 +562,17 @@ exports.getGameByDeveloper = async (req, res) => {
         deleteDuplicate = deleteDuplicate.filter((item) => item.privacy !== true)
 
         if(deleteDuplicate.length > 0) {
+            const collection = []
+            deleteDuplicate.map(obj => {
+                obj['user'] = {
+                    username: obj.user.username,
+                    avatar: obj.user.avatar
+                }
+                collection.push(obj);
+            });
+
             res.status(200).json({ 
-                result: deleteDuplicate
+                result: collection
             })
         }
         else {
@@ -553,8 +612,17 @@ exports.getGameBySearchKey = async (req, res) => {
         deleteDuplicate = deleteDuplicate.filter((item) => item.privacy !== true)
 
         if(deleteDuplicate.length > 0) {
+            const collection = []
+            deleteDuplicate.map(obj => {
+                obj['user'] = {
+                    username: obj.user.username,
+                    avatar: obj.user.avatar
+                }
+                collection.push(obj);
+            });
+
             res.status(200).json({ 
-                result: deleteDuplicate
+                result: collection
             })
         }
         else {
@@ -568,8 +636,17 @@ exports.getGameBySearchKey = async (req, res) => {
         deleteDuplicate = deleteDuplicate.filter((item) => item.privacy !== true)
 
         if(deleteDuplicate.length > 0) {
+            const collection = []
+            deleteDuplicate.map(obj => {
+                obj['user'] = {
+                    username: obj.user.username,
+                    avatar: obj.user.avatar
+                }
+                collection.push(obj);
+            });
+
             res.status(200).json({ 
-                result: deleteDuplicate
+                result: collection
             })
         }
         else {

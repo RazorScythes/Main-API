@@ -16,8 +16,17 @@ exports.getVideos = async (req, res) => {
         videos = videos.filter((item) => item.privacy !== true)
 
         if(videos.length > 0) {
+            const collection = []
+            videos.map(obj => {
+                obj['user'] = {
+                    username: obj.user.username,
+                    avatar: obj.user.avatar
+                }
+                collection.push(obj);
+            });
+
             res.status(200).json({ 
-                result: videos
+                result: collection
             })
         }
         else {
@@ -31,8 +40,17 @@ exports.getVideos = async (req, res) => {
         videos = videos.filter((item) => item.privacy !== true)
 
         if(videos.length > 0) {
+            const collection = []
+            videos.map(obj => {
+                obj['user'] = {
+                    username: obj.user.username,
+                    avatar: obj.user.avatar
+                }
+                collection.push(obj);
+            });
+
             res.status(200).json({ 
-                result: videos
+                result: collection
             })
         }
         else {
@@ -143,6 +161,7 @@ exports.getVideoByID = async (req, res) => {
             avatar: video.user.avatar,
             video
         }
+        result.video['user'] = {}
 
         if(user) {
             if(user.safe_content || user.safe_content === undefined) {

@@ -27,6 +27,7 @@ exports.getBlogByID = async (req, res) => {
             next: next ? next : '',
             prev: prev ? prev : ''
         }
+        result.blog['user'] = {}
 
         if(user) {
             if(user.safe_content || user.safe_content === undefined) {
@@ -65,8 +66,17 @@ exports.getBlogs = async(req, res) => {
         blogs = blogs.filter((item) => item.privacy !== true)
 
         if(blogs.length > 0) {
+            const collection = []
+            blogs.map(obj => {
+                obj['user'] = {
+                    username: obj.user.username,
+                    avatar: obj.user.avatar
+                }
+                collection.push(obj);
+            });
+
             res.status(200).json({ 
-                result: blogs
+                result: collection
             })
         }
         else {
@@ -80,8 +90,83 @@ exports.getBlogs = async(req, res) => {
         blogs = blogs.filter((item) => item.privacy !== true)
 
         if(blogs.length > 0) {
+            const collection = []
+            blogs.map(obj => {
+                obj['user'] = {
+                    username: obj.user.username,
+                    avatar: obj.user.avatar
+                }
+                collection.push(obj);
+            });
+
             res.status(200).json({ 
-                result: blogs
+                result: collection
+            })
+        }
+        else {
+            res.status(404).json({ 
+                message: "No available games"
+            })
+        }
+    }
+}
+
+exports.getLatestBlogs = async(req, res) => {
+    const { id, blogId } = req.body
+
+    let blogs = await Blog.find({}).sort({ createdAt: -1 }).populate('user')
+
+    if(id) {
+        const user = await Users.findById(id)
+
+        if(user.safe_content || user.safe_content === undefined)
+            blogs = blogs.filter((item) => item.strict !== true)
+
+        blogs = blogs.filter((item) => item.privacy !== true)
+
+        if(blogs.length > 0) {
+            const latestBlogs = blogs.slice(0, 8)
+            const filterBlogs = latestBlogs.filter((blog) => !blog._id.equals(blogId))
+            const collection = []
+            filterBlogs.map(obj => {
+                let newObj = {
+                    _id: obj._id,
+                    featured_image: obj.featured_image,
+                    post_title: obj.post_title,
+                    createdAt: obj.createdAt
+                }
+                collection.push(newObj);
+            });
+
+            res.status(200).json({ 
+                result: collection
+            })
+        }
+        else {
+            res.status(404).json({ 
+                message: "No available blogs"
+            })
+        }
+    }
+    else {
+        blogs = blogs.filter((item) => item.strict === false)
+        blogs = blogs.filter((item) => item.privacy !== true)
+
+        if(blogs.length > 0) {
+            const latestBlogs = blogs.slice(0, 8)
+            const filterBlogs = latestBlogs.filter((blog) => !blog._id.equals(blogId))
+            const collection = []
+            filterBlogs.map(obj => {
+                let newObj = {
+                    featured_image: obj.featured_image,
+                    post_title: obj.post_title,
+                    createdAt: obj.createdAt
+                }
+                collection.push(newObj);
+            });
+
+            res.status(200).json({ 
+                result: collection
             })
         }
         else {
