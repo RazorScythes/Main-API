@@ -350,6 +350,40 @@ exports.changePrivacyById = async (req, res) => {
     });
 }
 
+exports.changeBlogStrictById = async (req, res) => {
+    const { id, strict } = req.body
+
+    Blog.findByIdAndUpdate(id, { strict: strict }, { new: true })
+    .then((result) => {
+        res.status(200).json({ 
+            result: result
+        });
+    })
+    .catch(() => {
+        return res.status(404).json({ 
+            variant: 'danger',
+            message: "Error Updating Blog"
+        });
+    });
+}
+
+exports.changeBlogPrivacyById = async (req, res) => {
+    const { id, privacy } = req.body
+
+    Blog.findByIdAndUpdate(id, { privacy: privacy }, { new: true })
+    .then((result) => {
+        res.status(200).json({ 
+            result: result
+        });
+    })
+    .catch(() => {
+        return res.status(404).json({ 
+            variant: 'danger',
+            message: "Error Updating Blog"
+        });
+    });
+}
+
 exports.editVideo = async (req, res) => {
     const { id, data } = req.body
     if(!data || !id) return res.status(404).json({ variant: 'danger', message: "Video not found" })
@@ -674,4 +708,61 @@ exports.editBlog = async (req, res) => {
                     return res.status(404).json({ variant: 'danger', message: err })
                 })
     }
+}
+
+exports.removeBlog = async (req, res) => {
+    const { id, blog_id } = req.body
+ 
+    if(!id) return res.status(404).json({ variant: 'danger', message: "User not found" })
+    
+    Blog.findByIdAndDelete(blog_id)
+    .then(async () => {
+        try {
+            let blogs = await Blog.find({ user: id }).sort({ createdAt: -1 })
+
+            res.status(200).json({ 
+                result: blogs,
+            });
+        }
+        catch(err) {
+            console.log(err)
+            return res.status(404).json({ 
+                variant: 'danger',
+                message: "Failed to fetch blogs"
+            });
+        }
+    })
+    .catch((err) => {
+        return res.status(404).json({ variant: 'danger', message: err })
+    })
+}
+
+exports.bulkRemoveBlog = async (req, res) => {
+    const { id, blog_id } = req.body
+ 
+    if(!id) return res.status(404).json({ variant: 'danger', message: "User not found" })
+    
+    const objectIdsToDelete = blog_id.map(id => new mongoose.Types.ObjectId(id));
+
+    Blog.deleteMany({ _id: { $in: objectIdsToDelete } })
+    .then(async (result) => {
+        try {
+            let blogs = await Blog.find({ user: id }).sort({ createdAt: -1 })
+
+            res.status(200).json({ 
+                result: blogs,
+            });
+        }
+        catch(err) {
+            console.log(err)
+            return res.status(404).json({ 
+                variant: 'danger',
+                message: "Failed to fetch blogs"
+            });
+        }
+    })
+    .catch((err) => {
+        console.log(err)
+        return res.status(404).json({ variant: 'danger', message: err })
+    })
 }

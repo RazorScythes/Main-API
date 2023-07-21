@@ -19,7 +19,7 @@ const allowCors = fn => async (req, res) => {
     return await fn(req, res)
 }
 
-const { updateVideoProperties, getUserVideo, getUserGame, getUserBlog, uploadVideo, uploadGame, uploadBlog, editVideo, editGame, editBlog, removeVideo, removeGame, bulkRemoveVideo, bulkRemoveGame, changePrivacyById, changeStrictById, changeDownloadById, changeGameStrictById, changeGamePrivacyById } = require('../controller/uploads')
+const { changeBlogPrivacyById, changeBlogStrictById, removeBlog, bulkRemoveBlog, updateVideoProperties, getUserVideo, getUserGame, getUserBlog, uploadVideo, uploadGame, uploadBlog, editVideo, editGame, editBlog, removeVideo, removeGame, bulkRemoveVideo, bulkRemoveGame, changePrivacyById, changeStrictById, changeDownloadById, changeGameStrictById, changeGamePrivacyById } = require('../controller/uploads')
 
 router.post('/getUserVideo', allowCors(getUserVideo))
 router.post('/getUserGame', allowCors(getUserGame))
@@ -40,5 +40,9 @@ router.post('/changeGamePrivacyById', allowCors(changeGamePrivacyById))
 router.post('/changeGameStrictById', allowCors(changeGameStrictById))
 router.post('/changeDownloadById', allowCors(changeDownloadById))
 router.post('/updateVideoProperties', allowCors(updateVideoProperties))
+router.post('/changeBlogPrivacyById', allowCors(changeBlogPrivacyById))
+router.post('/changeBlogStrictById', allowCors(changeBlogStrictById))
+router.post('/removeBlog', allowCors(removeBlog))
+router.post('/bulkRemoveBlog', allowCors(bulkRemoveBlog))
 
 module.exports = router 
