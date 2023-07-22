@@ -1,4 +1,5 @@
 const Game                = require('../models/games.model')
+const Blog                = require('../models/blogs.model')
 const Users               = require('../models/user.model')
 
 exports.getGameByID = async (req, res) => {
@@ -654,5 +655,139 @@ exports.getGameBySearchKey = async (req, res) => {
                 message: "No Available Games"
             })
         }
+    }
+}
+
+exports.getRecentGameBlog = async (req, res) => {
+    const { id } = req.body 
+    
+    let blogs = await Blog.find({categories: 'Gaming'}).sort({ createdAt: -1 }).populate('user')
+
+    if(id) {
+        const user = await Users.findById(id)
+
+        if(user.safe_content || user.safe_content === undefined)
+            blogs = blogs.filter((item) => item.strict !== true)
+
+        blogs = blogs.filter((item) => item.privacy !== true)
+
+        if(blogs.length > 0) {
+            const collection = []
+            blogs.slice(0, 8).map(obj => {
+                obj['user'] = {
+                    username: obj.user.username,
+                    avatar: obj.user.avatar
+                }
+                collection.push(obj);
+            });
+
+            res.status(200).json({ 
+                result: collection.slice(0, 8)
+            })
+        }
+        else {
+            res.status(404).json({ 
+                message: "No available blogs"
+            })
+        }
+    }
+    else {
+        blogs = blogs.filter((item) => item.strict === false)
+        blogs = blogs.filter((item) => item.privacy !== true)
+
+        if(blogs.length > 0) {
+            const collection = []
+            blogs.slice(0, 8).map(obj => {
+                obj['user'] = {
+                    username: obj.user.username,
+                    avatar: obj.user.avatar
+                }
+                collection.push(obj);
+            });
+
+            res.status(200).json({ 
+                result: collection
+            })
+        }
+        else {
+            res.status(404).json({ 
+                message: "No available blogs"
+            })
+        }
+    }
+}
+
+exports.addRecentGamingBlogLikes = async (req, res) => {
+    const { userId, id, likes } = req.body
+
+    if(!id) return res.status(404).json({ variant: 'danger', message: 'invalid blogId' })
+
+    try {
+        Blog.findByIdAndUpdate(id, { likes: likes }, { new: true })
+            .then(async () => {
+                let blogs = await Blog.find({categories: 'Gaming'}).sort({ createdAt: -1 }).populate('user')
+
+                if(userId) {
+                    const user = await Users.findById(userId)
+
+                    if(user.safe_content || user.safe_content === undefined)
+                        blogs = blogs.filter((item) => item.strict !== true)
+
+                    blogs = blogs.filter((item) => item.privacy !== true)
+
+                    if(blogs.length > 0) {
+                        const collection = []
+                        blogs.slice(0, 8).map(obj => {
+                            obj['user'] = {
+                                username: obj.user.username,
+                                avatar: obj.user.avatar
+                            }
+                            collection.push(obj);
+                        });
+
+                        res.status(200).json({ 
+                            result: collection.slice(0, 8)
+                        })
+                    }
+                    else {
+                        res.status(404).json({ 
+                            message: "No available blogs"
+                        })
+                    }
+                }
+                else {
+                    blogs = blogs.filter((item) => item.strict === false)
+                    blogs = blogs.filter((item) => item.privacy !== true)
+
+                    if(blogs.length > 0) {
+                        const collection = []
+                        blogs.slice(0, 8).map(obj => {
+                            obj['user'] = {
+                                username: obj.user.username,
+                                avatar: obj.user.avatar
+                            }
+                            collection.push(obj);
+                        });
+
+                        res.status(200).json({ 
+                            result: collection
+                        })
+                    }
+                    else {
+                        res.status(404).json({ 
+                            message: "No available blogs"
+                        })
+                    }
+                }
+            })
+            .catch((err) => {
+                return res.status(404).json({ variant: 'danger', message: err })
+            })
+
+        res.status(200)
+    }
+    catch (err) {
+        console.log(err)
+        return res.status(404).json({ variant: 'danger', message: 'invalid blogId' })
     }
 }

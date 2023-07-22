@@ -133,6 +133,7 @@ exports.getLatestBlogs = async(req, res) => {
                     _id: obj._id,
                     featured_image: obj.featured_image,
                     post_title: obj.post_title,
+                    likes: obj.likes,
                     createdAt: obj.createdAt
                 }
                 collection.push(newObj);
@@ -466,6 +467,89 @@ exports.addOneBlogLikes = async (req, res) => {
                     }
                 }
                 res.status(200)
+            })
+            .catch((err) => {
+                return res.status(404).json({ variant: 'danger', message: err })
+            })
+
+        res.status(200)
+    }
+    catch (err) {
+        console.log(err)
+        return res.status(404).json({ variant: 'danger', message: 'invalid blogId' })
+    }
+}
+
+exports.addLatestBlogLikes = async (req, res) => {
+    const { userId, id, likes, blogId } = req.body
+
+    if(!id) return res.status(404).json({ variant: 'danger', message: 'invalid blogId' })
+
+    try {
+        Blog.findByIdAndUpdate(id, { likes: likes }, { new: true })
+            .then(async () => {
+                let blogs = await Blog.find({}).sort({ createdAt: -1 }).populate('user')
+
+                if(userId) {
+                    const user = await Users.findById(userId)
+
+                    if(user.safe_content || user.safe_content === undefined)
+                        blogs = blogs.filter((item) => item.strict !== true)
+
+                    blogs = blogs.filter((item) => item.privacy !== true)
+
+                    if(blogs.length > 0) {
+                        const latestBlogs = blogs.slice(0, 8)
+                        const filterBlogs = latestBlogs.filter((blog) => !blog._id.equals(blogId))
+                        const collection = []
+                        filterBlogs.map(obj => {
+                            let newObj = {
+                                _id: obj._id,
+                                featured_image: obj.featured_image,
+                                post_title: obj.post_title,
+                                likes: obj.likes,
+                                createdAt: obj.createdAt
+                            }
+                            collection.push(newObj);
+                        });
+
+                        res.status(200).json({ 
+                            result: collection
+                        })
+                    }
+                    else {
+                        res.status(404).json({ 
+                            message: "No available blogs"
+                        })
+                    }
+                }
+                else {
+                    blogs = blogs.filter((item) => item.strict === false)
+                    blogs = blogs.filter((item) => item.privacy !== true)
+
+                    if(blogs.length > 0) {
+                        const latestBlogs = blogs.slice(0, 8)
+                        const filterBlogs = latestBlogs.filter((blog) => !blog._id.equals(blogId))
+                        const collection = []
+                        filterBlogs.map(obj => {
+                            let newObj = {
+                                featured_image: obj.featured_image,
+                                post_title: obj.post_title,
+                                createdAt: obj.createdAt
+                            }
+                            collection.push(newObj);
+                        });
+
+                        res.status(200).json({ 
+                            result: collection
+                        })
+                    }
+                    else {
+                        res.status(404).json({ 
+                            message: "No available games"
+                        })
+                    }
+                }
             })
             .catch((err) => {
                 return res.status(404).json({ variant: 'danger', message: err })
