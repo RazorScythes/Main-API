@@ -19,17 +19,20 @@ const allowCors = fn => async (req, res) => {
     return await fn(req, res)
 }
 
-const { getBlogs, getBlogByID, getBlogComments, uploadBlogComment, removeBlogComment, countBlogCategories, addOneBlogViews, addOneBlogLikes, getLatestBlogs, addLatestBlogLikes } = require('../controller/blogs')
+const { getBlogs, getBlogsBySearchKey, getBlogByID, getBlogComments, uploadBlogComment, addOneBlogLikesBySearchKey, removeBlogComment, countBlogCategories, countBlogCategoriesBySearchKey, addOneBlogViews, addOneBlogLikes, getLatestBlogs, addLatestBlogLikes } = require('../controller/blogs')
 
 router.post('/getBlogByID', allowCors(getBlogByID))
 router.post('/getBlogs', allowCors(getBlogs))
+router.post('/getBlogsBySearchKey', allowCors(getBlogsBySearchKey))
 router.post('/getLatestBlogs', allowCors(getLatestBlogs))
 router.post('/getBlogComments', allowCors(getBlogComments))
 router.post('/uploadBlogComment', allowCors(uploadBlogComment))
 router.post('/removeBlogComment', allowCors(removeBlogComment))
 router.post('/countBlogCategories', allowCors(countBlogCategories))
+router.post('/countBlogCategoriesBySearchKey', allowCors(countBlogCategoriesBySearchKey))
 router.post('/addOneBlogViews', allowCors(addOneBlogViews))
 router.post('/addOneBlogLikes', allowCors(addOneBlogLikes))
+router.post('/addOneBlogLikesBySearchKey', allowCors(addOneBlogLikesBySearchKey))
 router.post('/addLatestBlogLikes', allowCors(addLatestBlogLikes))
 
 module.exports = router 

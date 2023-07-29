@@ -16,7 +16,7 @@ exports.getBlogByID = async (req, res) => {
 
         if(id) user = await Users.findById(id)
 
-        if(!blog) return res.status(404).json({ variant: 'danger', message: err, notFound: true })
+        if(!blog) return res.status(404).json({ variant: 'danger', message: "blog id not found", notFound: true })
         if(index !== blogs.length - 1) next = blogs[index+1]._id
         if(index !== 0) prev = blogs[index-1]._id
 
@@ -159,8 +159,10 @@ exports.getLatestBlogs = async(req, res) => {
             const collection = []
             filterBlogs.map(obj => {
                 let newObj = {
+                    _id: obj._id,
                     featured_image: obj.featured_image,
                     post_title: obj.post_title,
+                    likes: obj.likes,
                     createdAt: obj.createdAt
                 }
                 collection.push(newObj);
@@ -535,6 +537,7 @@ exports.addLatestBlogLikes = async (req, res) => {
                             let newObj = {
                                 featured_image: obj.featured_image,
                                 post_title: obj.post_title,
+                                likes: obj.likes,
                                 createdAt: obj.createdAt
                             }
                             collection.push(newObj);
@@ -550,6 +553,239 @@ exports.addLatestBlogLikes = async (req, res) => {
                         })
                     }
                 }
+            })
+            .catch((err) => {
+                return res.status(404).json({ variant: 'danger', message: err })
+            })
+
+        res.status(200)
+    }
+    catch (err) {
+        console.log(err)
+        return res.status(404).json({ variant: 'danger', message: 'invalid blogId' })
+    }
+}
+
+exports.getBlogsBySearchKey = async (req, res) => {
+    const { id, searchKey } = req.body
+
+    let blogs = await Blog.find({}).sort({ createdAt: -1 }).populate('user')
+    let collected_blogs = []
+
+    if(!searchKey)
+        return res.status(404).json({ 
+            message: "No Available Blogs"
+        })
+
+    blogs.forEach((blog) => {
+        if(blog.post_title.toLowerCase().includes(searchKey.toLowerCase()))
+            collected_blogs.push(blog)
+    })
+  
+    let deleteDuplicate = collected_blogs.filter((obj, index, self) =>
+        index === self.findIndex((o) => o._id.equals(obj._id))
+    );
+
+    if(id) {
+        const user = await Users.findById(id)
+
+        if(user.safe_content || user.safe_content === undefined)
+            deleteDuplicate = deleteDuplicate.filter((item) => item.strict !== true)
+
+        deleteDuplicate = deleteDuplicate.filter((item) => item.privacy !== true)
+
+        if(deleteDuplicate.length > 0) {
+            const collection = []
+            deleteDuplicate.map(obj => {
+                obj['user'] = {
+                    username: obj.user.username,
+                    avatar: obj.user.avatar
+                }
+                collection.push(obj);
+            });
+
+            res.status(200).json({ 
+                result: collection
+            })
+        }
+        else {
+            res.status(404).json({ 
+                message: "No Available Blogs"
+            })
+        }
+    }
+    else {
+        deleteDuplicate = deleteDuplicate.filter((item) => item.strict === false)
+        deleteDuplicate = deleteDuplicate.filter((item) => item.privacy !== true)
+
+        if(deleteDuplicate.length > 0) {
+            const collection = []
+            deleteDuplicate.map(obj => {
+                obj['user'] = {
+                    username: obj.user.username,
+                    avatar: obj.user.avatar
+                }
+                collection.push(obj);
+            });
+
+            res.status(200).json({ 
+                result: collection
+            })
+        }
+        else {
+            res.status(404).json({ 
+                message: "No Available Blogs"
+            })
+        }
+    }
+}
+
+exports.countBlogCategoriesBySearchKey = async (req, res) => {
+    const { id, searchKey } = req.body
+
+    let blogs = await Blog.find({}).sort({ createdAt: -1 }).populate('user')
+    var categories = []
+    let collected_blogs = []
+
+    if(!searchKey)
+        return res.status(404).json({ 
+            message: "No Available Blogs"
+        })
+
+    blogs.forEach((blog) => {
+        if(blog.post_title.toLowerCase().includes(searchKey.toLowerCase()))
+            collected_blogs.push(blog)
+    })
+  
+    let deleteDuplicate = collected_blogs.filter((obj, index, self) =>
+        index === self.findIndex((o) => o._id.equals(obj._id))
+    );
+
+    if(id) {
+        const user = await Users.findById(id)
+
+        if(user.safe_content || user.safe_content === undefined)
+            deleteDuplicate = deleteDuplicate.filter((item) => item.strict !== true)
+
+        deleteDuplicate = deleteDuplicate.filter((item) => item.privacy !== true)
+
+        if(deleteDuplicate.length > 0) {
+            deleteDuplicate.forEach((item) => {
+                categories.push(item.categories)
+            })
+
+            const counts = categories.reduce((acc, category) => {
+                if (acc[category]) {
+                acc[category]++;
+                } else {
+                acc[category] = 1;
+                }
+                return acc;
+            }, {});
+            
+            const result = Object.entries(counts).map(([category, count]) => ({ category, count }));
+            res.status(200).json({
+                result: result
+            })
+        }
+        else {
+            res.status(404).json({ 
+                message: "No available categories"
+            })
+        }
+    }
+    else {
+        deleteDuplicate = deleteDuplicate.filter((item) => item.strict === false)
+        deleteDuplicate = deleteDuplicate.filter((item) => item.privacy !== true)
+
+        if(deleteDuplicate.length > 0) {
+            deleteDuplicate.forEach((item) => {
+                categories.push(item.categories)
+            })
+
+            const counts = categories.reduce((acc, category) => {
+                if (acc[category]) {
+                acc[category]++;
+                } else {
+                acc[category] = 1;
+                }
+                return acc;
+            }, {});
+            
+            const result = Object.entries(counts).map(([category, count]) => ({ category, count }));
+
+            res.status(200).json({
+                result: result
+            })
+        }
+        else {
+            res.status(404).json({ 
+                message: "No available categories"
+            })
+        }
+    }
+}
+
+exports.addOneBlogLikesBySearchKey = async (req, res) => {
+    const { userId, id, likes, searchKey } = req.body
+ 
+    if(!id) return res.status(404).json({ variant: 'danger', message: 'invalid blogId' })
+    
+    try {
+        Blog.findByIdAndUpdate(id, { likes: likes }, { new: true })
+            .then(async () => {
+                let blogs = await Blog.find({}).sort({ createdAt: -1 }).populate('user')
+                let collected_blogs = []
+
+                if(!searchKey)
+                    return res.status(404).json({ 
+                        message: "No Available Blogs"
+                    })
+
+                blogs.forEach((blog) => {
+                    if(blog.post_title.toLowerCase().includes(searchKey.toLowerCase()))
+                        collected_blogs.push(blog)
+                })
+            
+                let deleteDuplicate = collected_blogs.filter((obj, index, self) =>
+                    index === self.findIndex((o) => o._id.equals(obj._id))
+                );
+
+                if(userId) {
+                    const user = await Users.findById(userId)
+
+                    if(user.safe_content || user.safe_content === undefined)
+                        deleteDuplicate = deleteDuplicate.filter((item) => item.strict !== true)
+
+                    deleteDuplicate = deleteDuplicate.filter((item) => item.privacy !== true)
+
+                    if(deleteDuplicate.length > 0) {
+                        res.status(200).json({ 
+                            result: deleteDuplicate
+                        })
+                    }
+                    else {
+                        res.status(404).json({ 
+                            message: "No available blogs"
+                        })
+                    }
+                }
+                else {
+                    deleteDuplicate = deleteDuplicate.filter((item) => item.strict === false)
+                    deleteDuplicate = deleteDuplicate.filter((item) => item.privacy !== true)
+
+                    if(deleteDuplicate.length > 0) {
+                        res.status(200).json({ 
+                            result: deleteDuplicate
+                        })
+                    }
+                    else {
+                        res.status(404).json({ 
+                            message: "No available blogs"
+                        })
+                    }
+                }
+                res.status(200)
             })
             .catch((err) => {
                 return res.status(404).json({ variant: 'danger', message: err })
