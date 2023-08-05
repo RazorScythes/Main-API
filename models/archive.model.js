@@ -2,11 +2,16 @@ const mongoose      = require('mongoose')
 const Schema        = mongoose.Schema
 
 const archiveSchema = new Schema({
-    feature_image: { type: String },
-    title: { type: String },
-    content: { type: String}, 
-    gallery: { type: Array},
-    download_link: { type: String }
+    user: {
+        type: Schema.Types.ObjectId,
+        ref:'User'
+    },
+    archive_name: {
+        type: Schema.Types.ObjectId,
+        ref: 'ArchiveName'
+    },
+    content_type: { type: String },
+    content_id: { type: String },
 },{
     timestamps: true,
     collection: "archive"
