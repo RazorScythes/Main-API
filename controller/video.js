@@ -1,4 +1,6 @@
 const Video               = require('../models/video.model')
+const ArchiveName         = require('../models/archiveName.model')
+const Archive         = require('../models/archive.model')
 const Users               = require('../models/user.model')
 const VideoArchive        = require('../models/videoArchive.model')
 const uuid                = require('uuid');
@@ -9,6 +11,7 @@ exports.getVideos = async (req, res) => {
     let videos = await Video.find({}).sort({ createdAt: -1 }).populate('user')
     if(id) {
         const user = await Users.findById(id)
+        const archive = await ArchiveName.findOne({ user: id, archive_name: 'Videos' })
 
         if(user.safe_content || user.safe_content === undefined)
             videos = videos.filter((item) => item.strict !== true)
@@ -26,7 +29,8 @@ exports.getVideos = async (req, res) => {
             });
 
             res.status(200).json({ 
-                result: collection
+                result: collection,
+                archiveList: archive
             })
         }
         else {
@@ -164,14 +168,15 @@ exports.getVideoByID = async (req, res) => {
         result.video['user'] = {}
 
         if(user) {
+            const archive = await ArchiveName.findOne({ user: id, archive_name: 'Videos' })
             if(user.safe_content || user.safe_content === undefined) {
                 if(video.strict) { res.status(409).json({ forbiden: 'strict'}) }
                 else if(video.privacy) { res.status(409).json({ forbiden: 'private' }) }
-                else { res.status(200).json({  result: result }) }
+                else { res.status(200).json({ result: result, archiveList: archive }) }
             }
             else {
                 if(video.privacy) { res.status(409).json({ forbiden: 'private' }) }
-                else { res.status(200).json({ result: result }) }
+                else { res.status(200).json({ result: result, archiveList: archive }) }
             }
         }
         else {
@@ -207,6 +212,7 @@ exports.getVideoByTag = async (req, res) => {
 
     if(id) {
         const user = await Users.findById(id)
+        const archive = await ArchiveName.findOne({ user: id, archive_name: 'Videos' })
 
         if(user.safe_content || user.safe_content === undefined)
             deleteDuplicate = deleteDuplicate.filter((item) => item.strict !== true)
@@ -215,7 +221,8 @@ exports.getVideoByTag = async (req, res) => {
 
         if(deleteDuplicate.length > 0) {
             res.status(200).json({ 
-                result: deleteDuplicate
+                result: deleteDuplicate,
+                archiveList: archive
             })
         }
         else {
@@ -263,6 +270,7 @@ exports.getVideoByArtist = async (req, res) => {
 
     if(id) {
         const user = await Users.findById(id)
+        const archive = await ArchiveName.findOne({ user: id, archive_name: 'Videos' })
 
         if(user.safe_content || user.safe_content === undefined)
             deleteDuplicate = deleteDuplicate.filter((item) => item.strict !== true)
@@ -271,7 +279,8 @@ exports.getVideoByArtist = async (req, res) => {
 
         if(deleteDuplicate.length > 0) {
             res.status(200).json({ 
-                result: deleteDuplicate
+                result: deleteDuplicate,
+                archiveList: archive
             })
         }
         else {
@@ -319,6 +328,7 @@ exports.getVideoBySearchKey = async (req, res) => {
 
     if(id) {
         const user = await Users.findById(id)
+        const archive = await ArchiveName.findOne({ user: id, archive_name: 'Videos' })
 
         if(user.safe_content || user.safe_content === undefined)
             deleteDuplicate = deleteDuplicate.filter((item) => item.strict !== true)
@@ -327,7 +337,8 @@ exports.getVideoBySearchKey = async (req, res) => {
 
         if(deleteDuplicate.length > 0) {
             res.status(200).json({ 
-                result: deleteDuplicate
+                result: deleteDuplicate,
+                archiveList: archive
             })
         }
         else {
@@ -726,8 +737,8 @@ exports.removeComment = async (req, res) => {
 }
 
 exports.addToWatchLater = async (req, res) => {
-    const { id, videoId } = req.body
-
+    const { id, videoId, archiveId, directory } = req.body
+    console.log(req.body)
     if(!id || !videoId) 
         return  res.status(404).json({ 
                     sideAlert: {
@@ -737,21 +748,18 @@ exports.addToWatchLater = async (req, res) => {
                     }
                 })
     
-    const videoArchives = await VideoArchive.find({})
+    const videoArchives = await Archive.find({user: id, content_id: videoId, directory_name: directory, archive_name: archiveId, content_type: 'Videos'})
 
-    const videoExist = videoArchives.some((video) => {
-        if(video.user.equals(id) && video.video.equals(videoId)) {
-            return true
-        }
-    })
-
-    if(!videoExist) {
+    if(videoArchives.length === 0) {
         const newWatchLaterObj = {
             user: id,
-            video: videoId
+            archive_name: archiveId,
+            directory_name: directory,
+            content_type: 'Videos',
+            content_id: videoId
         }
 
-        const newWatchLater = new VideoArchive(newWatchLaterObj)
+        const newWatchLater = new Archive(newWatchLaterObj)
 
         newWatchLater.save()
         .then(() => {

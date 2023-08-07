@@ -10,6 +10,7 @@ const archiveSchema = new Schema({
         type: Schema.Types.ObjectId,
         ref: 'ArchiveName'
     },
+    directory_name: { type: String },
     content_type: { type: String },
     content_id: { type: String },
 },{
