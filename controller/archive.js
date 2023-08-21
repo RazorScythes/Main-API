@@ -15,19 +15,35 @@ exports.getArchiveNameById = async (req, res) => {
             var defaultArchives = [
                 {
                     user: id,
-                    archive_name: "Videos"
+                    archive_name: "Videos",
+                    bg_color: '#CD3242',
+                    icon_bg_color: '#CD3242',
+                    icon_color: '#FFFFFF',
+                    icon: 'fa-video'
                 },
                 {
                     user: id,
-                    archive_name: "Blogs"
+                    archive_name: "Blogs",
+                    bg_color: '#0DCAF0',
+                    icon_bg_color: '#0DCAF0',
+                    icon_color: '#FFFFFF',
+                    icon: 'fa-note-sticky'
                 },
                 {
                     user: id,
-                    archive_name: "Games"
+                    archive_name: "Games",
+                    bg_color: '#15CA20',
+                    icon_bg_color: '#15CA20',
+                    icon_color: '#FFFFFF',
+                    icon: 'fa-gamepad'
                 },
                 {
                     user: id,
-                    archive_name: "Software"
+                    archive_name: "Software",
+                    bg_color: '#FFC20D',
+                    icon_bg_color: '#FFC20D',
+                    icon_color: '#FFFFFF',
+                    icon: 'fa-computer'
                 }
             ]
 
@@ -44,6 +60,50 @@ exports.getArchiveNameById = async (req, res) => {
         res.status(404).json({ 
             message: "No available data"
         })
+    }
+}
+
+exports.getArchiveDataById = async (req, res) => {
+    const { id, archive } = req.body
+
+    if(!id || !archive) return res.status(404).json({ variant: 'danger', message: "archive not found", notFound: true })
+    
+    var archive_name = await ArchiveName.findOne({ user: id, archive_name: archive })
+    var content_type_list = []
+
+    if(archive_name) {
+        var archives = await Archive.find({ user: id, archive_name: archive_name._id, content_type: archive }).populate('archive_name')
+        
+        archives.forEach((item) => {
+            content_type_list.push(item.directory_name)
+        })
+
+        const counts = content_type_list.reduce((acc, items) => {
+            if (acc[items]) {
+            acc[items]++;
+            } else {
+            acc[items] = 1;
+            }
+            return acc;
+        }, {});
+        
+        const result = Object.entries(counts).map(([name, items]) => ({ name, items }));
+
+        result.forEach((item) => {
+            archive_name.archive_list.forEach((a, i) => {
+                if(item.name === a.name) {
+                    archive_name.archive_list[i].items = item.items
+                }
+                else {
+                    archive_name.archive_list[i].items = 0
+                }
+            })
+        })
+
+        res.status(200).json({ result: archive_name })
+    }
+    else {
+        return res.status(404).json({ variant: 'danger', message: "archive not found", notFound: true })
     }
 }
 
@@ -73,19 +133,35 @@ exports.newArchiveList = async (req, res) => {
                 var defaultArchives = [
                     {
                         user: id,
-                        archive_name: "Videos"
+                        archive_name: "Videos",
+                        bg_color: '#CD3242',
+                        icon_bg_color: '#CD3242',
+                        icon_color: '#FFFFFF',
+                        icon: 'fa-video'
                     },
                     {
                         user: id,
-                        archive_name: "Blogs"
+                        archive_name: "Blogs",
+                        bg_color: '#0DCAF0',
+                        icon_bg_color: '#0DCAF0',
+                        icon_color: '#FFFFFF',
+                        icon: 'fa-note-sticky'
                     },
                     {
                         user: id,
-                        archive_name: "Games"
+                        archive_name: "Games",
+                        bg_color: '#15CA20',
+                        icon_bg_color: '#15CA20',
+                        icon_color: '#FFFFFF',
+                        icon: 'fa-gamepad'
                     },
                     {
                         user: id,
-                        archive_name: "Software"
+                        archive_name: "Software",
+                        bg_color: '#FFC20D',
+                        icon_bg_color: '#FFC20D',
+                        icon_color: '#FFFFFF',
+                        icon: 'fa-computer'
                     }
                 ]
 
@@ -143,19 +219,35 @@ exports.removeArchiveList = async (req, res) => {
                 var defaultArchives = [
                     {
                         user: id,
-                        archive_name: "Videos"
+                        archive_name: "Videos",
+                        bg_color: '#CD3242',
+                        icon_bg_color: '#CD3242',
+                        icon_color: '#FFFFFF',
+                        icon: 'fa-video'
                     },
                     {
                         user: id,
-                        archive_name: "Blogs"
+                        archive_name: "Blogs",
+                        bg_color: '#0DCAF0',
+                        icon_bg_color: '#0DCAF0',
+                        icon_color: '#FFFFFF',
+                        icon: 'fa-note-sticky'
                     },
                     {
                         user: id,
-                        archive_name: "Games"
+                        archive_name: "Games",
+                        bg_color: '#15CA20',
+                        icon_bg_color: '#15CA20',
+                        icon_color: '#FFFFFF',
+                        icon: 'fa-gamepad'
                     },
                     {
                         user: id,
-                        archive_name: "Software"
+                        archive_name: "Software",
+                        bg_color: '#FFC20D',
+                        icon_bg_color: '#FFC20D',
+                        icon_color: '#FFFFFF',
+                        icon: 'fa-computer'
                     }
                 ]
 

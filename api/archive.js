@@ -18,9 +18,10 @@ const allowCors = fn => async (req, res) => {
     return await fn(req, res)
 }
 
-const { getArchiveNameById, newArchiveList, removeArchiveList } = require('../controller/archive')
+const { getArchiveNameById, getArchiveDataById, newArchiveList, removeArchiveList } = require('../controller/archive')
 
 router.post('/getArchiveNameById', allowCors(getArchiveNameById))
+router.post('/getArchiveDataById', allowCors(getArchiveDataById))
 router.post('/newArchiveList', allowCors(newArchiveList))
 router.post('/removeArchiveList', allowCors(removeArchiveList))
 
