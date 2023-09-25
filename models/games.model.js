@@ -21,7 +21,7 @@ const gameSchema = new Schema({
         platform: { type: String }
     },
     leave_uploader_message: { type: String },
-    download_count: { type: Number },
+    download_count: { type: Array },
     strict: { type: Boolean },
     privacy: { type: Boolean },
     ratings: { type: Array },

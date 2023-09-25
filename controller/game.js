@@ -105,6 +105,45 @@ exports.getGames = async (req, res) => {
     }
 }
 
+exports.addOneDownload = async (req, res) => {
+    const { id, gameId } = req.body
+
+    if(!gameId) return res.status(404).json({ variant: 'danger', message: 'invalid videoId' })
+
+    try {
+        let game = await Game.findById(gameId)
+
+        let duplicate_id = false
+
+        game.download_count.some((item) => {
+            if(item === id) {
+                duplicate_id = true
+                console.log("Id exists")
+                return true
+            }
+        })
+
+        if(!duplicate_id) {
+            console.log("Id added")
+            game.download_count.push(id)
+
+            Game.findByIdAndUpdate(gameId, game, { new: true })
+                .then(() => {
+                    res.status(200)
+                })
+                .catch((err) => {
+                    return res.status(404).json({ variant: 'danger', message: err })
+                })
+        }
+
+        res.status(200)
+    }
+    catch (err) {
+        console.log(err)
+        return res.status(404).json({ variant: 'danger', message: 'invalid gameId' })
+    }
+}
+
 exports.addRatings = async (req, res) => {
     const { gameId, ratings } = req.body
 
