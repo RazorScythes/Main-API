@@ -2,6 +2,24 @@ const Game                = require('../models/games.model')
 const Blog                = require('../models/blogs.model')
 const Users               = require('../models/user.model')
 
+
+function generateRandomID(length = 10) {
+    const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+    let result = '';
+  
+    for (let i = 0; i < length; i++) {
+      const randomIndex = Math.floor(Math.random() * characters.length);
+      result += characters.charAt(randomIndex);
+    }
+  
+    return result;
+}
+  
+  // Usage example:
+  const uniqueID = generateRandomID(20); // Generates a random ID with a length of 10 characters
+  console.log(uniqueID);
+
+  
 exports.getGameByID = async (req, res) => {
     const { id, gameId } = req.body
 
