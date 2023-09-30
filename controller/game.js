@@ -40,7 +40,7 @@ exports.getGameByID = async (req, res) => {
                             if(key.user_downloaded.length > 0) {
                                 key.user_downloaded.forEach((user) => {
                                     if(user.cookie_id === cookie_id || user.user_id === id) {
-                                        checkUser = true;
+                                        checkUser = user.cookie_id ? user.cookie_id : user.user_id ? user.user_id : 'empty';
                                     }
                                 })
                             }
@@ -60,7 +60,7 @@ exports.getGameByID = async (req, res) => {
                                 }
                                 access[i].download_limit = String(key.download_limit - 1)
                                 access[i].user_downloaded.push(obj)
-                                checkUser = true
+                                checkUser = checkUser = user.cookie_id ? user.cookie_id : user.user_id ? user.user_id : 'empty';
                                 checkLimit = true
                                 gameData.access_key = access
                             }
@@ -72,7 +72,7 @@ exports.getGameByID = async (req, res) => {
                     }
 
                     if(checkUser) {
-                        return res.status(200).json({ result: result, forbiden: 'passed1' })
+                        return res.status(200).json({ result: result, forbiden: 'passed1', user: checkUser })
                     }
                     else {
                         return res.status(409).json({ forbiden: 'private' }) 
