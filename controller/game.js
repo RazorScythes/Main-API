@@ -9,7 +9,6 @@ exports.getGameByID = async (req, res) => {
 
     try {
         let game = await Game.findById(gameId).populate('user')
-        var gameData = game
 
         let user = null
 
@@ -54,15 +53,8 @@ exports.getGameByID = async (req, res) => {
                         var checkLimit = false
                         access.forEach(async (key, i) => {
                             if(key.key === access_key && Number(key.download_limit) > 0) {
-                                var obj = {
-                                    cookie_id: cookie_id ? cookie_id : '',
-                                    user_id: id ? id : ''
-                                }
-                                access[i].download_limit = String(key.download_limit - 1)
-                                access[i].user_downloaded.push(obj)
-                                checkUser = checkUser = user.cookie_id ? user.cookie_id : user.user_id ? user.user_id : 'empty';
+                                checkUser = true;
                                 checkLimit = true
-                                gameData.access_key = access
                             }
                         })
                         if(!checkLimit) return res.status(409).json({ forbiden: 'access_limit' })  
@@ -72,13 +64,13 @@ exports.getGameByID = async (req, res) => {
                     }
 
                     if(checkUser) {
-                        return res.status(200).json({ result: result, forbiden: checkUser ? checkUser : "empty" })
+                        return res.status(200).json({ result: result })
                     }
                     else {
                         return res.status(409).json({ forbiden: 'private' }) 
                     }
                 }
-                else { res.status(200).json({  result: result, forbiden: 'passed2' }) }
+                else { res.status(200).json({  result: result }) }
             }
             else {
                 if(game.privacy) { 
@@ -106,15 +98,8 @@ exports.getGameByID = async (req, res) => {
                         var checkLimit = false
                         access.forEach(async (key, i) => {
                             if(key.key === access_key && Number(key.download_limit) > 0) {
-                                var obj = {
-                                    cookie_id: cookie_id ? cookie_id : '',
-                                    user_id: id ? id : ''
-                                }
-                                access[i].download_limit = String(key.download_limit - 1)
-                                access[i].user_downloaded.push(obj)
                                 checkUser = true
                                 checkLimit = true
-                                gameData.access_key = access
                             }
                         })
                         if(!checkLimit) return res.status(409).json({ forbiden: 'access_limit' })  
@@ -124,13 +109,13 @@ exports.getGameByID = async (req, res) => {
                     }
 
                     if(checkUser) {
-                        return res.status(200).json({ result: result, forbiden: 'passed3' })
+                        return res.status(200).json({ result: result })
                     }
                     else {
                         return res.status(409).json({ forbiden: 'private' }) 
                     }
                 }
-                else { res.status(200).json({ result: result, forbiden: 'passed4' }) }
+                else { res.status(200).json({ result: result }) }
             }
         }
         else {
@@ -171,13 +156,13 @@ exports.getGameByID = async (req, res) => {
                 }
 
                 if(checkUser) {
-                    return res.status(200).json({ result: result, forbiden: 'no user1'.checkUser })
+                    return res.status(200).json({ result: result })
                 }
                 else {
                     return res.status(409).json({ forbiden: 'private' }) 
                 }
             }
-            else { res.status(200).json({  result: result, forbiden: 'no user2' }) }
+            else { res.status(200).json({  result: result }) }
         }
     }
     catch(err) {
