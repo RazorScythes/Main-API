@@ -145,7 +145,7 @@ exports.getGameByID = async (req, res) => {
                         found_key = true
                         if(key.user_downloaded.length > 0) {
                             key.user_downloaded.forEach((user) => {
-                                if(user.cookie_id === cookie_id || user.user_id === id) {
+                                if(user.cookie_id === cookie_id) {
                                     checkUser = true;
                                 }
                             })
@@ -160,15 +160,8 @@ exports.getGameByID = async (req, res) => {
                     var checkLimit = false
                     access.forEach(async (key, i) => {
                         if(key.key === access_key && Number(key.download_limit) > 0) {
-                            var obj = {
-                                cookie_id: cookie_id ? cookie_id : '',
-                                user_id: id ? id : ''
-                            }
-                            access[i].download_limit = String(key.download_limit - 1)
-                            access[i].user_downloaded.push(obj)
                             checkUser = true
                             checkLimit = true
-                            gameData.access_key = access
                         }
                     })
                     if(!checkLimit) return res.status(409).json({ forbiden: 'access_limit' })  
@@ -184,7 +177,7 @@ exports.getGameByID = async (req, res) => {
                     return res.status(409).json({ forbiden: 'private' }) 
                 }
             }
-            else { res.status(200).json({  result: result, forbiden: 'no user1' }) }
+            else { res.status(200).json({  result: result, forbiden: 'no user2' }) }
         }
     }
     catch(err) {
