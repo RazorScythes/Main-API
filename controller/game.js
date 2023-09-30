@@ -72,7 +72,7 @@ exports.getGameByID = async (req, res) => {
                     }
 
                     if(checkUser) {
-                        return res.status(200).json({ result: result, forbiden: checkUser ? "empty" })
+                        return res.status(200).json({ result: result, forbiden: checkUser ? checkUser : "empty" })
                     }
                     else {
                         return res.status(409).json({ forbiden: 'private' }) 
@@ -178,13 +178,13 @@ exports.getGameByID = async (req, res) => {
                 }
 
                 if(checkUser) {
-                    return res.status(200).json({ result: result })
+                    return res.status(200).json({ result: result, forbiden: 'no user1' })
                 }
                 else {
                     return res.status(409).json({ forbiden: 'private' }) 
                 }
             }
-            else { res.status(200).json({  result: result }) }
+            else { res.status(200).json({  result: result, forbiden: 'no user1' }) }
         }
     }
     catch(err) {
