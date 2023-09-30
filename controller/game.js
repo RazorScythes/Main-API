@@ -1,32 +1,15 @@
 const Game                = require('../models/games.model')
 const Blog                = require('../models/blogs.model')
 const Users               = require('../models/user.model')
-
-
-function generateRandomID(length = 10) {
-    const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
-    let result = '';
-  
-    for (let i = 0; i < length; i++) {
-      const randomIndex = Math.floor(Math.random() * characters.length);
-      result += characters.charAt(randomIndex);
-    }
-  
-    return result;
-}
-  
-  // Usage example:
-  const uniqueID = generateRandomID(20); // Generates a random ID with a length of 10 characters
-  console.log(uniqueID);
-
   
 exports.getGameByID = async (req, res) => {
-    const { id, gameId } = req.body
+    const { id, gameId, access_key, cookie_id } = req.body
 
     if(!gameId) return res.status(404).json({ variant: 'danger', message: "game id not found", notFound: true })
 
     try {
         let game = await Game.findById(gameId).populate('user')
+        var gameData = game
 
         let user = null
 
@@ -41,26 +24,196 @@ exports.getGameByID = async (req, res) => {
         }
         result.game['user'] = {}
 
+        var access = game.access_key;
+
         if(user) {
             if(user.safe_content || user.safe_content === undefined) {
                 if(game.strict) { res.status(409).json({ forbiden: 'strict'}) }
-                else if(game.privacy) { res.status(409).json({ forbiden: 'private' }) }
+                else if(game.privacy) { 
+                    if(!access_key) return res.status(409).json({ forbiden: 'private' }) 
+
+                    var checkUser = false;
+                    var found_key = false;
+                    access.forEach((key) => {
+                        if(key.key === access_key)
+                            found_key = true
+                            if(key.user_downloaded.length > 0) {
+                                key.user_downloaded.forEach((user) => {
+                                    if(user.cookie_id === cookie_id || user.user_id === id) {
+                                        checkUser = true;
+                                    }
+                                })
+                            }
+                    })
+
+                    if(!found_key) return res.status(409).json({ forbiden: 'access_invalid' }) 
+
+                    var checkLimit = false
+
+                    if(!checkUser) {
+                        var checkLimit = false
+                        access.forEach(async (key, i) => {
+                            if(key.key === access_key && Number(key.download_limit) > 0) {
+                                var obj = {
+                                    cookie_id: cookie_id ? cookie_id : '',
+                                    user_id: id ? id : ''
+                                }
+                                access[i].download_limit = String(key.download_limit - 1)
+                                access[i].user_downloaded.push(obj)
+                                checkUser = true
+                                checkLimit = true
+                                gameData.access_key = access
+                            }
+                        })
+                        if(!checkLimit) return res.status(409).json({ forbiden: 'access_limit' })  
+                        else {
+                            return res.status(200).json({ result: result, forbiden: 'access_granted' })
+                        } 
+                    }
+
+                    if(checkUser) {
+                        return res.status(200).json({ result: result })
+                    }
+                    else {
+                        return res.status(409).json({ forbiden: 'private' }) 
+                    }
+                }
                 else { res.status(200).json({  result: result }) }
             }
             else {
-                if(game.privacy) { res.status(409).json({ forbiden: 'private' }) }
+                if(game.privacy) { 
+                    if(!access_key) return res.status(409).json({ forbiden: 'private' }) 
+
+                    var checkUser = false;
+                    var found_key = false;
+                    access.forEach((key) => {
+                        if(key.key === access_key)
+                            found_key = true
+                            if(key.user_downloaded.length > 0) {
+                                key.user_downloaded.forEach((user) => {
+                                    if(user.cookie_id === cookie_id || user.user_id === id) {
+                                        checkUser = true;
+                                    }
+                                })
+                            }
+                    })
+
+                    if(!found_key) return res.status(409).json({ forbiden: 'access_invalid' }) 
+
+                    var checkLimit = false
+
+                    if(!checkUser) {
+                        var checkLimit = false
+                        access.forEach(async (key, i) => {
+                            if(key.key === access_key && Number(key.download_limit) > 0) {
+                                var obj = {
+                                    cookie_id: cookie_id ? cookie_id : '',
+                                    user_id: id ? id : ''
+                                }
+                                access[i].download_limit = String(key.download_limit - 1)
+                                access[i].user_downloaded.push(obj)
+                                checkUser = true
+                                checkLimit = true
+                                gameData.access_key = access
+                            }
+                        })
+                        if(!checkLimit) return res.status(409).json({ forbiden: 'access_limit' })  
+                        else {
+                            return res.status(200).json({ result: result, forbiden: 'access_granted' })
+                        } 
+                    }
+
+                    if(checkUser) {
+                        return res.status(200).json({ result: result })
+                    }
+                    else {
+                        return res.status(409).json({ forbiden: 'private' }) 
+                    }
+                }
                 else { res.status(200).json({ result: result }) }
             }
         }
         else {
             if(game.strict) { res.status(409).json({ forbiden: 'strict'}) }
-            else if(game.privacy) { res.status(409).json({ forbiden: 'private' }) }
+            else if(game.privacy) { 
+                if(!access_key) return res.status(409).json({ forbiden: 'private' }) 
+
+                var checkUser = false;
+                var found_key = false;
+                access.forEach((key) => {
+                    if(key.key === access_key)
+                        found_key = true
+                        if(key.user_downloaded.length > 0) {
+                            key.user_downloaded.forEach((user) => {
+                                if(user.cookie_id === cookie_id || user.user_id === id) {
+                                    checkUser = true;
+                                }
+                            })
+                        }
+                })
+
+                if(!found_key) return res.status(409).json({ forbiden: 'access_invalid' }) 
+
+                var checkLimit = false
+
+                if(!checkUser) {
+                    var checkLimit = false
+                    access.forEach(async (key, i) => {
+                        if(key.key === access_key && Number(key.download_limit) > 0) {
+                            var obj = {
+                                cookie_id: cookie_id ? cookie_id : '',
+                                user_id: id ? id : ''
+                            }
+                            access[i].download_limit = String(key.download_limit - 1)
+                            access[i].user_downloaded.push(obj)
+                            checkUser = true
+                            checkLimit = true
+                            gameData.access_key = access
+                        }
+                    })
+                    if(!checkLimit) return res.status(409).json({ forbiden: 'access_limit' })  
+                    else {
+                        return res.status(200).json({ result: result, forbiden: 'access_granted' })
+                    } 
+                }
+
+                if(checkUser) {
+                    return res.status(200).json({ result: result })
+                }
+                else {
+                    return res.status(409).json({ forbiden: 'private' }) 
+                }
+            }
             else { res.status(200).json({  result: result }) }
         }
     }
     catch(err) {
         console.log(err)
         return res.status(404).json({ variant: 'danger', message: 'invalid gameId', notFound: true })
+    }
+}
+
+exports.updateGameAccessKey = async (req, res) => {
+    const { id, gameId, access_key, cookie_id } = req.body
+
+    if(!gameId) return res.status(404).json({ variant: 'danger', message: "game id not found", notFound: true })
+
+    try {
+        let game = await Game.findById(gameId).populate('user')
+
+        const index = game.access_key.findIndex(item => item.key === access_key);
+
+        const obj = {
+            cookie_id: cookie_id,
+            user_id: id
+        }
+        game.access_key[index].download_limit -= 1;
+        game.access_key[index].user_downloaded.push(obj)
+
+        await Game.findByIdAndUpdate(gameId, game, { new: true })
+
+    } catch (err) {
+        console.log(err)
     }
 }
 
