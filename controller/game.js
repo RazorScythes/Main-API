@@ -72,7 +72,7 @@ exports.getGameByID = async (req, res) => {
                     }
 
                     if(checkUser) {
-                        return res.status(200).json({ result: result, forbiden: checkUser })
+                        return res.status(200).json({ result: result, forbiden: checkUser ? "empty" })
                     }
                     else {
                         return res.status(409).json({ forbiden: 'private' }) 
