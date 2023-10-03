@@ -71,6 +71,18 @@ function convertSizeToReadable(sizeInBytes) {
     return `${convertedSize.toFixed(2)} ${units[unitIndex]}`
 }
 
+function generateRandomID(length = 20) {
+    const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+    let result = '';
+  
+    for (let i = 0; i < length; i++) {
+      const randomIndex = Math.floor(Math.random() * characters.length);
+      result += characters.charAt(randomIndex);
+    }
+  
+    return result;
+}
+
 function uploadSingleImage(base64, folder){
     if(base64.includes('https://drive.google.com')) {
         console.log(base64)
@@ -336,7 +348,9 @@ exports.changeDownloadById = async (req, res) => {
 exports.changePrivacyById = async (req, res) => {
     const { id, privacy } = req.body
 
-    Video.findByIdAndUpdate(id, { privacy: privacy }, { new: true })
+    var new_access_key = generateRandomID()
+
+    Video.findByIdAndUpdate(id, { privacy: privacy, access_key: new_access_key }, { new: true })
     .then((result) => {
         res.status(200).json({ 
             result: result

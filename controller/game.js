@@ -205,8 +205,10 @@ exports.getGames = async (req, res) => {
 
         if(user.safe_content || user.safe_content === undefined)
             games = games.filter((item) => item.strict !== true)
-
-        games = games.filter((item) => item.privacy !== true)
+        console.log(user._id, games[0].user._id, user._id.equals(games[0].user._id))
+        games = games.filter((item) => {
+            return item.privacy !== true || user._id.equals(item.user._id);
+          });
 
         if(games.length > 0) {
             const collection = []

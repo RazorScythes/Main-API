@@ -16,6 +16,7 @@ const videoSchema = new Schema({
     comment: { type: Array },
     strict: { type: Boolean },
     privacy: { type: Boolean },
+    access_key: { type: String },
     downloadable: { type: Boolean },
     related_videos: { type: Array },
     file_size: { type: String }

@@ -147,13 +147,13 @@ exports.addOneViews = async (req, res) => {
 }
 
 exports.getVideoByID = async (req, res) => {
-    const { id, videoId } = req.body
+    const { id, videoId, access_key } = req.body
 
     if(!videoId) return res.status(404).json({ variant: 'danger', message: "video id not found", notFound: true })
 
     try {
         let video = await Video.findById(videoId).populate('user')
-
+        let video_uid = video.user._id
         let user = null
         
         if(id) user = await Users.findById(id)
@@ -171,17 +171,35 @@ exports.getVideoByID = async (req, res) => {
             const archive = await ArchiveName.findOne({ user: id, archive_name: 'Videos' })
             if(user.safe_content || user.safe_content === undefined) {
                 if(video.strict) { res.status(409).json({ forbiden: 'strict'}) }
-                else if(video.privacy) { res.status(409).json({ forbiden: 'private' }) }
+                else if(video.privacy) { 
+                    if(video.access_key === access_key || video_uid.equals(id)) res.status(200).json({ result: result, archiveList: archive })
+                    else if(!access_key) res.status(409).json({ forbiden: 'private' }) 
+                    else res.status(409).json({ forbiden: 'access_invalid' }) 
+                }
                 else { res.status(200).json({ result: result, archiveList: archive }) }
             }
             else {
-                if(video.privacy) { res.status(409).json({ forbiden: 'private' }) }
+                if(video.privacy) { 
+                    if(video.access_key === access_key) {
+                        if(video.access_key === access_key || video_uid.equals(id)) res.status(200).json({ result: result, archiveList: archive })
+                        else if(!access_key) res.status(409).json({ forbiden: 'private' }) 
+                        else res.status(409).json({ forbiden: 'access_invalid' }) 
+                    }
+                    res.status(409).json({ forbiden: 'private' }) 
+                }
                 else { res.status(200).json({ result: result, archiveList: archive }) }
             }
         }
         else {
             if(video.strict) { res.status(409).json({ forbiden: 'strict'}) }
-            else if(video.privacy) { res.status(409).json({ forbiden: 'private' }) }
+            else if(video.privacy) { 
+                if(video.access_key === access_key) {
+                    if(!access_key) res.status(409).json({ forbiden: 'private' }) 
+                    else if(video.access_key === access_key) res.status(200).json({ result: result, archiveList: archive })
+                    else res.status(409).json({ forbiden: 'access_invalid' }) 
+                }
+                res.status(409).json({ forbiden: 'private' }) 
+            }
             else { res.status(200).json({  result: result }) }
         }
     }

@@ -233,7 +233,7 @@ exports.getProfile = async (req, res) => {
 
     res.status(200).json({ 
         result: profile,
-        published: user.portfolio_id.published
+        published: user.portfolio_id?.published
     })
 }
 
