@@ -16,7 +16,9 @@ exports.getVideos = async (req, res) => {
         if(user.safe_content || user.safe_content === undefined)
             videos = videos.filter((item) => item.strict !== true)
 
-        videos = videos.filter((item) => item.privacy !== true)
+        videos = videos.filter((item) => {
+            return item.privacy !== true || user._id.equals(item.user._id);
+          });
 
         if(videos.length > 0) {
             const collection = []
