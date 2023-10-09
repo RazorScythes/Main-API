@@ -19,7 +19,7 @@ const allowCors = fn => async (req, res) => {
     return await fn(req, res)
 }
 
-const { userToken, verifyEmail, sendVerificationEmail, getProfile, updateProfile, updatePassword, updateOptions } = require('../controller/settings')
+const { userToken, getAllUsers, verifyEmail, sendVerificationEmail, getProfile, updateProfile, updatePassword, updateOptions } = require('../controller/settings')
 
 router.post('/userToken', allowCors(userToken))
 router.post('/verifyEmail', allowCors(verifyEmail))
@@ -28,5 +28,6 @@ router.post('/getProfile', allowCors(getProfile))
 router.post('/updateProfile', allowCors(updateProfile))
 router.post('/updatePassword', allowCors(updatePassword))
 router.post('/updateOptions', allowCors(updateOptions))
+router.post('/getAllUsers', allowCors(getAllUsers))
 
 module.exports = router 

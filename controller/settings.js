@@ -187,6 +187,42 @@ function deleteSingleImage (delete_id, folder) {
     })
 }
 
+exports.getAllUsers = async (req, res) => {
+    const { id, role } = req.body
+
+    const user = await Users.findById(id)
+
+    if (!user) 
+        return res.status(404).json({
+            message: 'User not found',
+            variant: 'danger'
+        })
+
+    if(role !== 'Admin')
+        return res.status(404).json({
+            message: "You don't have permission to access this page!",
+            variant: 'danger'
+        })
+    
+    try {
+        var users = await Users.find({})
+        
+        users.forEach((u, i) => {
+            users[i].password = ''
+        })
+
+        if(users.length > 0) {
+            res.status(200).json({ result: users })
+        }
+        else {
+            res.status(404).json({ variant: 'danger', message: 'no user found', notFound: true })
+        }
+    } catch(err) {
+        console.log(err)
+        res.status(404).json({ variant: 'danger', message: 'no user found', notFound: true })
+    }
+}
+
 exports.userToken = async (req, res) => {
     const token = req.headers.token
     

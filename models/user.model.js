@@ -22,7 +22,8 @@ const userSchema = Schema({
         verified: { type: Boolean },
         verification_token: { type: String },
         verification_time_to_send: { type: String }
-    }
+    },
+    contribution: { type: Number } 
 },{
     timestamps: true
 })

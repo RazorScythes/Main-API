@@ -9,7 +9,7 @@ exports.getGameByID = async (req, res) => {
 
     try {
         let game = await Game.findById(gameId).populate('user')
-
+        let game_uid = game.user._id
         let user = null
 
         if(id) user = await Users.findById(id)
@@ -29,6 +29,7 @@ exports.getGameByID = async (req, res) => {
             if(user.safe_content || user.safe_content === undefined) {
                 if(game.strict) { res.status(409).json({ forbiden: 'strict'}) }
                 else if(game.privacy) { 
+                    if(game_uid.equals(id)) return res.status(200).json({ result: result })
                     if(!access_key) return res.status(409).json({ forbiden: 'private' }) 
 
                     var checkUser = false;
@@ -74,6 +75,7 @@ exports.getGameByID = async (req, res) => {
             }
             else {
                 if(game.privacy) { 
+                    if(game_uid.equals(id)) return res.status(200).json({ result: result })
                     if(!access_key) return res.status(409).json({ forbiden: 'private' }) 
 
                     var checkUser = false;
