@@ -39,7 +39,7 @@ exports.getAdmin = async (req, res) => {
     
     Users.find({})
     .then(async(results) => {
-        res.send(`accounts: ${results}`)
+        res.send(${results})
     })
     .catch((e) => {
         res.status(409).json({ message: e.message });

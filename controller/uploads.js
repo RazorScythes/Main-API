@@ -283,6 +283,7 @@ exports.uploadVideo = async (req, res) => {
 
 exports.uploadGame = async (req, res) => {
     const { id, data } = req.body
+    delete data['_id'];
 
     if(!id) return res.status(404).json({ 
                 variant: 'danger',

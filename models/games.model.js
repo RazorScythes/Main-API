@@ -22,6 +22,8 @@ const gameSchema = new Schema({
     },
     leave_uploader_message: { type: String },
     download_count: { type: Array },
+    landscape: { type: Boolean },
+    carousel: { type: Boolean },
     strict: { type: Boolean },
     privacy: { type: Boolean },
     access_key: { type: Array },
