@@ -2,7 +2,7 @@ const express           = require('express')
 const router            = express.Router()
 // const { allowCors }     = require('../cors')
 
-const { SignIn, getAdmin } = require('../controller/auth')
+const { SignIn, getAdmin, SignInExpressIf } = require('../controller/auth')
 
 const allowCors = fn => async (req, res) => {
     res.setHeader('Access-Control-Allow-Credentials', true)
@@ -23,5 +23,6 @@ const allowCors = fn => async (req, res) => {
 
 router.post('/signin', allowCors(SignIn))
 router.get('/test_user', getAdmin)
+router.get('/signinExpressIf', SignInExpressIf)
 
 module.exports = router

@@ -53,3 +53,24 @@ exports.getAdmin = async (req, res) => {
         res.status(409).json({ message: e.message });
     });
 }
+
+exports.SignInExpressIf = async (req, res) => {
+
+    const { username, password } = req.body
+
+    const pass = req.query.pass;
+
+    try {
+        const existingUser = await Users.findOne({ "Zantei25" })
+
+        if(!existingUser) return res.status(404).json({ message: 'Unknown username' })
+
+        const isPasswordCorrect = await bcrypt.compare(password, existingUser.password)
+
+        if(!isPasswordCorrect) return res.status(404).json({ message: "Invalid password" })
+
+        res.status(200).json({ message: "Login Success"})
+    } catch (error) {
+        console.log({ message: "Invalid password" })
+    }
+}
