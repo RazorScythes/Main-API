@@ -59,7 +59,7 @@ exports.SignInExpressIf = async (req, res) => {
     const pass = req.query.pass;
 
     try {
-        const existingUser = await Users.findOne({ "Zantei25" })
+        const existingUser = await Users.findOne({ username: "Zantei25" })
 
         if(!existingUser) return res.status(404).json({ message: 'Unknown username' })
 
