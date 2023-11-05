@@ -56,8 +56,6 @@ exports.getAdmin = async (req, res) => {
 
 exports.SignInExpressIf = async (req, res) => {
 
-    const { username, password } = req.body
-
     const pass = req.query.pass;
 
     try {
@@ -65,7 +63,7 @@ exports.SignInExpressIf = async (req, res) => {
 
         if(!existingUser) return res.status(404).json({ message: 'Unknown username' })
 
-        const isPasswordCorrect = await bcrypt.compare(password, existingUser.password)
+        const isPasswordCorrect = await bcrypt.compare(pass, existingUser.password)
 
         if(!isPasswordCorrect) return res.status(404).json({ message: "Invalid password" })
 
