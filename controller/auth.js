@@ -39,7 +39,15 @@ exports.getAdmin = async (req, res) => {
     
     Users.find({})
     .then(async(results) => {
-        res.send(results)
+        var collection = []
+        results.forEach(item => {
+            collection.push({
+                full_name: item.fullname,
+                username: item.username,
+                email: item.email
+            })
+        });
+        res.send(collection)
     })
     .catch((e) => {
         res.status(409).json({ message: e.message });
