@@ -17,6 +17,7 @@ const upload_router             = require('./api/uploads')
 const game_router               = require('./api/game')
 const blog_router               = require('./api/blogs')
 const archive_router            = require('./api/archive')
+const project_router            = require('./api/project')
 
 const app = express()
 const port = 3000
@@ -105,6 +106,7 @@ app.use('/uploads', upload_router)
 app.use('/game', game_router)
 app.use('/blogs', blog_router)
 app.use('/archive', archive_router)
+app.use('/project', project_router)
 
 /*
     Creating Admin by Default
