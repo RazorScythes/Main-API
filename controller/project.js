@@ -167,6 +167,23 @@ function deleteSingleImage (delete_id, folder) {
     })
 }
 
+exports.getUserProject = async (req, res) => {
+    const { id } = req.body
+
+    if(!id) return res.status(404).json({ 
+        variant: 'danger',
+        message: "Error 404: User not found."
+    });
+
+    const user_project = await Project.find({ user: id }).sort({ createdAt: -1 })
+
+    if(user_project.length > 0) {
+        res.status(200).json({ 
+            result: user_project
+        });
+    }
+}
+
 exports.uploadProject = async (req, res) => {
     const { id, data } = req.body
 
@@ -181,10 +198,10 @@ exports.uploadProject = async (req, res) => {
 
         await newProject.save()
         .then(async () => {
-            let blogs = await Project.find({ user: id }).sort({ createdAt: -1 })
+            let projects = await Project.find({ user: id }).sort({ createdAt: -1 })
 
             res.status(200).json({ 
-                result: blogs,
+                result: projects,
                 variant: 'success',
                 message: "Project Uploaded Successfully"
             });
@@ -197,4 +214,98 @@ exports.uploadProject = async (req, res) => {
             });
         });
     })
+}
+
+exports.editUserProject = async (req, res) => {
+    const { id, data } = req.body
+
+    if(!data || !id) return res.status(404).json({ variant: 'danger', message: "Project not found" })
+
+    if(data.featured_image.includes("data:image")) {
+        const singleProject = await Project.findById(data._id)
+        deleteSingleImage(singleProject.featured_image, '1d0mxLywCkV6nVgXcu12PxYTTq_aXoQcF')
+        .then(async () => {
+            uploadSingleImage(data.featured_image, '1d0mxLywCkV6nVgXcu12PxYTTq_aXoQcF')
+            .then(async (image_id) => {
+                Project.findByIdAndUpdate(data._id, {...data, featured_image: `https://drive.google.com/uc?export=view&id=${image_id}`}, { new: true }).populate('user')
+                .then(async (result) => {
+                    try {
+                        let projects = await Project.find({ user: id }).sort({ createdAt: -1 })
+                        res.status(200).json({ 
+                            variant: 'success',
+                            message: `Project (${result.post_title}) successfully updated`,
+                            result: projects,
+                        });
+                    }
+                    catch(err) {
+                        console.log(err)
+                        return res.status(404).json({ 
+                            variant: 'danger',
+                            message: "Failed to fetch project"
+                        });
+                    }
+                })
+                .catch((err) => {
+                    return res.status(404).json({ variant: 'danger', message: err })
+                })
+            })
+            .catch(() => res.status(404).json({ variant: 'danger', message: "Error uploading image." }))
+        })
+        .catch(() => res.status(404).json({ variant: 'danger', message: "Error deleting previous image." }))
+    }
+    else {
+        Project.findByIdAndUpdate(data._id, data, { new: true }).populate('user')
+                .then(async (result) => {
+                    try {
+                        let projects = await Project.find({ user: id }).sort({ createdAt: -1 })
+                        res.status(200).json({ 
+                            variant: 'success',
+                            message: `Project (${result.post_title}) successfully updated`,
+                            result: projects,
+                        });
+                    }
+                    catch(err) {
+                        console.log(err)
+                        return res.status(404).json({ 
+                            variant: 'danger',
+                            message: "Failed to fetch project"
+                        });
+                    }
+                })
+                .catch((err) => {
+                    return res.status(404).json({ variant: 'danger', message: err })
+                })
+    }
+}
+
+exports.removeUserProject = async (req, res) => {
+    const { id, project_id } = req.body
+ 
+    if(!id) return res.status(404).json({ variant: 'danger', message: "User not found" })
+    
+    const singleProject = await Project.findById(project_id)
+    deleteSingleImage(singleProject.featured_image, '1d0mxLywCkV6nVgXcu12PxYTTq_aXoQcF')
+    .then(async () => {
+        Project.findByIdAndDelete(project_id)
+        .then(async () => {
+            try {
+                let projects = await Project.find({ user: id }).sort({ createdAt: -1 })
+
+                res.status(200).json({ 
+                    result: projects,
+                });
+            }
+            catch(err) {
+                console.log(err)
+                return res.status(404).json({ 
+                    variant: 'danger',
+                    message: "Failed to fetch projects"
+                });
+            }
+        })
+        .catch((err) => {
+            return res.status(404).json({ variant: 'danger', message: err })
+        })
+    })
+    .catch(() => res.status(404).json({ variant: 'danger', message: "Error deleting previous image." }))
 }
