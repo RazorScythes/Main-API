@@ -105,7 +105,7 @@ exports.getBlogs = async(req, res) => {
         }
         else {
             res.status(404).json({ 
-                message: "No available games"
+                message: "No available blogs"
             })
         }
     }

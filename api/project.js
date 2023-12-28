@@ -19,8 +19,9 @@ const allowCors = fn => async (req, res) => {
     return await fn(req, res)
 }
 
-const { getUserProject, uploadProject, editUserProject, removeUserProject } = require('../controller/project')
+const { getProjects, getUserProject, uploadProject, editUserProject, removeUserProject } = require('../controller/project')
 
+router.post('/getProjects', allowCors(getProjects))
 router.post('/uploadProject', allowCors(uploadProject))
 router.post('/getUserProject', allowCors(getUserProject))
 router.post('/editUserProject', allowCors(editUserProject))
