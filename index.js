@@ -136,3 +136,91 @@ async function defaultAdmin() {
 }
 
 defaultAdmin()
+
+// const Category                      = require('./models/category.model')
+// const Project                       = require('./models/projects.model')
+// async function testData() {
+//     var array = []
+//     const categories = await Category.find({type: 'projects'})
+//     const projects = await Project.find({})
+
+//     categories.forEach((category) => {
+//         const lookup = projects.filter(project => category._id.equals(project.categories));
+//         console.log(lookup)
+//         array.push({
+//             icon: category.icon,
+//             category: category.category,
+//             shortcut: category.shortcut,
+//             count: lookup.length
+//         })
+//     })
+
+//     console.log(array)
+// }
+
+// testData()
+// const categories = [
+//     {
+//         icon: 'fa-lightbulb',
+//         category: 'Internet of Things',
+//         shortcut: 'IoT',
+//         type: 'projects'
+//     }, 
+//     {
+//         icon: 'fa-window-maximize',
+//         category: 'Web Development',
+//         shortcut: 'Web',
+//         type: 'projects'
+//     }, 
+//     {
+//         icon: 'fa-gamepad',
+//         category: 'Game Development',
+//         shortcut: 'Game',
+//         type: 'projects'
+//     }, 
+//     {
+//         icon: 'fa-hand-peace',
+//         category: 'Do It Yourself',
+//         shortcut: 'DIY',
+//         type: 'projects'
+//     }, 
+//     {
+//         icon: 'fa-cogs',
+//         category: 'Robotics',
+//         shortcut: 'Robotics',
+//         type: 'projects'
+//     }, 
+//     {
+//         icon: 'fa-microchip',
+//         category: 'Arduino',
+//         shortcut: 'Arduino',
+//         type: 'projects'
+//     }, 
+//     {
+//         icon: 'fa-code',
+//         category: 'Software Development',
+//         shortcut: 'Software',
+//         type: 'projects'
+//     }, 
+//     {
+//         icon: 'fa-archive',
+//         category: 'Archives',
+//         shortcut: 'Archives',
+//         type: 'projects'
+//     }, 
+//     {
+//         icon: 'fa-bolt-lightning',
+//         category: 'Electronics',
+//         shortcut: 'Electronics',
+//         type: 'projects'
+//     }, 
+// ]
+
+// const Category                      = require('./models/category.model')
+
+// categories.forEach((item) => {
+//     const newAccount = new Category(item)
+//     newAccount.save().then((data) =>
+//         console.log(`Category ${data.category} created`
+//     ));
+// })

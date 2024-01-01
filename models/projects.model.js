@@ -7,7 +7,10 @@ const projectSchema = new Schema({
         ref:'User'
     },
     featured_image: { type: String },
-    categories: { type: String },
+    categories: {
+        type: Schema.Types.ObjectId,
+        ref:'Category'
+    },
     post_title: { type: String },
     date_start: { type: String },
     date_end: { type: String },

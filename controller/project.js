@@ -1,4 +1,5 @@
 const Project                   = require('../models/projects.model')
+const Category                  = require('../models/category.model')
 const Users                     = require('../models/user.model')
 const mongoose                  = require('mongoose');
 const path                      = require('path')
@@ -165,6 +166,42 @@ function deleteSingleImage (delete_id, folder) {
             reject(err);
         }
     })
+}
+
+exports.getCategory = async(req, res) => {
+    var array = []
+    const categories = await Category.find({type: 'projects'})
+    const projects = await Project.find({})
+
+    categories.forEach((category) => {
+        const lookup = projects.filter(project => category._id.equals(project.categories));
+        console.log(lookup)
+        array.push({
+            icon: category.icon,
+            category: category.category,
+            shortcut: category.shortcut,
+            count: lookup.length
+        })
+    })
+
+    res.status(200).json({ 
+        result: array
+    })
+}
+
+exports.getAdminCategory = async(req, res) => {
+    const category = await Category.find({type: 'projects'})
+
+    if(category.length > 0) {
+        res.status(200).json({ 
+            result: category
+        })
+    }
+    else {
+        res.status(404).json({ 
+            message: "No available category"
+        })
+    }
 }
 
 exports.getProjects = async(req, res) => {
