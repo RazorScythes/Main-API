@@ -175,7 +175,6 @@ exports.getCategory = async(req, res) => {
 
     categories.forEach((category) => {
         const lookup = projects.filter(project => category._id.equals(project.categories));
-        console.log(lookup)
         array.push({
             icon: category.icon,
             category: category.category,
@@ -404,4 +403,83 @@ exports.removeUserProject = async (req, res) => {
         })
     })
     .catch(() => res.status(404).json({ variant: 'danger', message: "Error deleting previous image." }))
+}
+
+exports.projectCountTags = async (req, res) => {
+    const { id } = req.body
+
+    var projects = await Project.find({}).sort({ createdAt: -1 }).populate('user')
+    var tag_list = []
+
+    if(id) {
+        const user = await Users.findById(id)
+
+        if(user.safe_content || user.safe_content === undefined)
+            projects = projects.filter((item) => item.strict !== true)
+
+        projects = projects.filter((item) => item.privacy !== true)
+
+        if(projects.length > 0) {
+            projects.forEach((item) => {
+                if(item.tags.length > 0) {
+                    item.tags.forEach((tag) => {
+                        tag_list.push(tag)
+                    })
+                }
+            })
+
+            const counts = tag_list.reduce((acc, tag) => {
+                if (acc[tag]) {
+                acc[tag]++;
+                } else {
+                acc[tag] = 1;
+                }
+                return acc;
+            }, {});
+            
+            const result = Object.entries(counts).map(([tag, count]) => ({ tag, count }));
+            res.status(200).json({
+                result: result
+            })
+        }
+        else {
+            res.status(404).json({ 
+                message: "No available projects"
+            })
+        }
+    }
+    else {
+        projects = projects.filter((item) => item.strict === false)
+        projects = projects.filter((item) => item.privacy !== true)
+
+        if(projects.length > 0) {
+            projects.forEach((item) => {
+                if(item.tags.length > 0) {
+                    item.tags.forEach((tag) => {
+                        tag_list.push(tag)
+                    })
+                }
+            })
+
+            const counts = tag_list.reduce((acc, tag) => {
+                if (acc[tag]) {
+                acc[tag]++;
+                } else {
+                acc[tag] = 1;
+                }
+                return acc;
+            }, {});
+            
+            const result = Object.entries(counts).map(([tag, count]) => ({ tag, count }));
+
+            res.status(200).json({
+                result: result
+            })
+        }
+        else {
+            res.status(404).json({ 
+                message: "No available projects"
+            })
+        }
+    }
 }
