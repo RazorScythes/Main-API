@@ -262,6 +262,75 @@ exports.getProjects = async(req, res) => {
     }
 }
 
+exports.getProjectsByCategories = async(req, res) => {
+    const { id, category } = req.body
+
+    let cat = await Category.findOne({shortcut: category})
+
+    if(cat === null) {
+        return res.status(404).json({ 
+            message: "No available projects"
+        })
+    }
+   
+    let project = await Project.find({}).sort({ createdAt: -1 }).populate('user')
+
+    let projects = project.filter(proj => cat._id.equals(proj.categories));
+
+    if(id) {
+        const user = await Users.findById(id)
+
+        if(user.safe_content || user.safe_content === undefined)
+            projects = projects.filter((item) => item.strict !== true)
+
+        projects = projects.filter((item) => item.privacy !== true)
+
+        if(projects.length > 0) {
+            const collection = []
+            projects.map(obj => {
+                obj['user'] = {
+                    username: obj.user.username,
+                    avatar: obj.user.avatar
+                }
+                collection.push(obj);
+            });
+
+            res.status(200).json({ 
+                result: collection
+            })
+        }
+        else {
+            res.status(404).json({ 
+                message: "No available projects"
+            })
+        }
+    }
+    else {
+        projects = projects.filter((item) => item.strict === false)
+        projects = projects.filter((item) => item.privacy !== true)
+
+        if(projects.length > 0) {
+            const collection = []
+            projects.map(obj => {
+                obj['user'] = {
+                    username: obj.user.username,
+                    avatar: obj.user.avatar
+                }
+                collection.push(obj);
+            });
+
+            res.status(200).json({ 
+                result: collection
+            })
+        }
+        else {
+            res.status(404).json({ 
+                message: "No available projects"
+            })
+        }
+    }
+}
+
 exports.getUserProject = async (req, res) => {
     const { id } = req.body
 
