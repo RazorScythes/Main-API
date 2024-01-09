@@ -296,7 +296,8 @@ exports.getProjectsByCategories = async(req, res) => {
             });
 
             res.status(200).json({ 
-                result: collection
+                result: collection,
+                tags: countTags(projects)
             })
         }
         else {
@@ -320,7 +321,8 @@ exports.getProjectsByCategories = async(req, res) => {
             });
 
             res.status(200).json({ 
-                result: collection
+                result: collection,
+                tags: countTags(projects)
             })
         }
         else {
@@ -331,6 +333,81 @@ exports.getProjectsByCategories = async(req, res) => {
     }
 }
 
+exports.getProjectsBySearchKey = async (req, res) => {
+    const { id, searchKey } = req.body
+
+    let projects = await Project.find({}).sort({ createdAt: -1 }).populate('user')
+    let collected_projects = []
+
+    if(!searchKey)
+        return res.status(404).json({ 
+            message: "No Available Project"
+        })
+
+    projects.forEach((project) => {
+        if(project.post_title.toLowerCase().includes(searchKey.toLowerCase()))
+            collected_projects.push(project)
+    })
+  
+    let deleteDuplicate = collected_projects.filter((obj, index, self) =>
+        index === self.findIndex((o) => o._id.equals(obj._id))
+    );
+
+    if(id) {
+        const user = await Users.findById(id)
+
+        if(user.safe_content || user.safe_content === undefined)
+            deleteDuplicate = deleteDuplicate.filter((item) => item.strict !== true)
+
+        deleteDuplicate = deleteDuplicate.filter((item) => item.privacy !== true)
+
+        if(deleteDuplicate.length > 0) {
+            const collection = []
+            deleteDuplicate.map(obj => {
+                obj['user'] = {
+                    username: obj.user.username,
+                    avatar: obj.user.avatar
+                }
+                collection.push(obj);
+            });
+            
+            res.status(200).json({ 
+                result: collection,
+                tags: countTags(deleteDuplicate)
+            })
+        }
+        else {
+            res.status(404).json({ 
+                message: "No Available Project"
+            })
+        }
+    }
+    else {
+        deleteDuplicate = deleteDuplicate.filter((item) => item.strict === false)
+        deleteDuplicate = deleteDuplicate.filter((item) => item.privacy !== true)
+
+        if(deleteDuplicate.length > 0) {
+            const collection = []
+            deleteDuplicate.map(obj => {
+                obj['user'] = {
+                    username: obj.user.username,
+                    avatar: obj.user.avatar
+                }
+                collection.push(obj);
+            });
+
+            res.status(200).json({ 
+                result: collection,
+                tags: countTags(deleteDuplicate)
+            })
+        }
+        else {
+            res.status(404).json({ 
+                message: "No Available Project"
+            })
+        }
+    }
+}
 exports.getUserProject = async (req, res) => {
     const { id } = req.body
 
@@ -472,6 +549,29 @@ exports.removeUserProject = async (req, res) => {
         })
     })
     .catch(() => res.status(404).json({ variant: 'danger', message: "Error deleting previous image." }))
+}
+
+function countTags(arr) {
+    var tag_list = []
+    arr.forEach((item) => {
+        if(item.tags.length > 0) {
+            item.tags.forEach((tag) => {
+                tag_list.push(tag)
+            })
+        }
+    })
+
+    const counts = tag_list.reduce((acc, tag) => {
+        if (acc[tag]) {
+        acc[tag]++;
+        } else {
+        acc[tag] = 1;
+        }
+        return acc;
+    }, {});
+    
+    const result = Object.entries(counts).map(([tag, count]) => ({ tag, count }));
+    return result
 }
 
 exports.projectCountTags = async (req, res) => {
