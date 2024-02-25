@@ -652,3 +652,53 @@ exports.projectCountTags = async (req, res) => {
         }
     }
 }
+
+exports.getProjectByID = async (req, res) => {
+    const { id, projectId } = req.body
+
+    if(!projectId) return res.status(404).json({ variant: 'danger', message: "project id not found", notFound: true })
+
+    try {
+        let projects = await Project.find().populate('user')
+        let index = projects.findIndex((obj) => obj['_id'].equals(projectId));
+        let project =  projects.find((obj) => obj['_id'].equals(projectId));
+        let next, prev;
+        let user = null
+
+        if(id) user = await Users.findById(id)
+
+        if(!project) return res.status(404).json({ variant: 'danger', message: "project id not found", notFound: true })
+        if(index !== projects.length - 1) next = projects[index+1]._id
+        if(index !== 0) prev = projects[index-1]._id
+
+        const result = {
+            username: project.user.username,
+            avatar: project.user.avatar,
+            project, 
+            next: next ? next : '',
+            prev: prev ? prev : ''
+        }
+        result.project['user'] = {}
+
+        if(user) {
+            if(user.safe_content || user.safe_content === undefined) {
+                if(project.strict) { res.status(409).json({ forbiden: 'strict'}) }
+                else if(project.privacy) { res.status(409).json({ forbiden: 'private' }) }
+                else { res.status(200).json({  result: result }) }
+            }
+            else {
+                if(project.privacy) { res.status(409).json({ forbiden: 'private' }) }
+                else { res.status(200).json({ result: result }) }
+            }
+        }
+        else {
+            if(project.strict) { res.status(409).json({ forbiden: 'strict'}) }
+            else if(project.privacy) { res.status(409).json({ forbiden: 'private' }) }
+            else { res.status(200).json({  result: result }) }
+        }
+    }
+    catch(err) {
+        console.log(err)
+        return res.status(404).json({ variant: 'danger', message: 'invalid projectId', notFound: true })
+    }
+}
