@@ -19,7 +19,7 @@ const allowCors = fn => async (req, res) => {
     return await fn(req, res)
 }
 
-const { getProjectByID, getCategory, getProjects, getProjectsByCategories, getProjectsBySearchKey, getAdminCategory, getUserProject, uploadProject, editUserProject, removeUserProject, projectCountTags } = require('../controller/project')
+const { getProjectComments, uploadProjectComment, removeProjectComment, getProjectByID, getCategory, getProjects, getProjectsByCategories, getProjectsBySearchKey, getAdminCategory, getUserProject, uploadProject, editUserProject, removeUserProject, projectCountTags } = require('../controller/project')
 
 router.post('/getProjectByID', allowCors(getProjectByID))
 router.post('/getCategory', allowCors(getCategory))
@@ -32,5 +32,9 @@ router.post('/getUserProject', allowCors(getUserProject))
 router.post('/editUserProject', allowCors(editUserProject))
 router.post('/removeUserProject', allowCors(removeUserProject))
 router.post('/projectCountTags', allowCors(projectCountTags))
+
+router.post('/getProjectComments', allowCors(getProjectComments))
+router.post('/uploadProjectComment', allowCors(uploadProjectComment))
+router.post('/removeProjectComment', allowCors(removeProjectComment))
 
 module.exports = router 

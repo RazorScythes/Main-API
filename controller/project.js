@@ -702,3 +702,139 @@ exports.getProjectByID = async (req, res) => {
         return res.status(404).json({ variant: 'danger', message: 'invalid projectId', notFound: true })
     }
 }
+
+function getProjectCommentInfo(data) {
+    return new Promise(async (resolve) => {
+        const user = await Users.findById(data.user)
+        const obj = {
+            id: data.id,
+            parent_id: data.parent_id,
+            username: user.username,
+            avatar: user.avatar,
+            comments: data.comments,
+            date: data.date
+        }
+        resolve(obj)
+    });
+}
+
+exports.getProjectComments = async (req, res) => {
+    const { projectId } = req.body
+
+    if(!projectId) return res.status(404).json({ variant: 'danger', message: err })
+
+    try {
+        let project = await Project.findById(projectId).populate('user')
+
+        if(!project) return res.status(404).json({ variant: 'danger', message: err })
+
+        var collection = []
+        project.comment.forEach((c) => {
+            collection.push(getProjectCommentInfo(c))
+        })
+        Promise.all(collection)
+        .then((comments_result) => {
+            project.comment = comments_result
+            let sorted = project.comment.sort(function(a, b) {
+                var c = new Date(a.date);
+                var d = new Date(b.date);
+                return d-c;
+            });
+
+            res.status(200).json({ 
+                comments: sorted
+            })
+        })
+        .catch((e) => {
+            console.log(e)
+            res.status(409).json({ message: e.message });
+        });
+    }
+    catch (err) {
+        console.log(err)
+        return res.status(404).json({ variant: 'danger', message: 'invalid videoId' })
+    }
+}
+
+exports.uploadProjectComment = async (req, res) => {
+    const { id, avatar, user, comment } = req.body
+
+    let project = await Project.findById(id).populate('user')
+
+    if(!project) return res.status(404).json({ variant: 'danger', message: err })
+
+    const newComment = {
+        id: uuid.v4(),
+        parent_id: id,
+        user: user,
+        comments: comment,
+        date: new Date()
+    }
+
+    project.comment.push(newComment)
+   
+    Project.findByIdAndUpdate(id, project, { new: true }).populate('user')
+    .then((updated) => {
+        var collection = []
+        updated.comment.forEach((c) => {
+            collection.push(getProjectCommentInfo(c))
+        })
+        Promise.all(collection)
+        .then((comments_result) => {
+            let sorted = comments_result.sort(function(a, b) {
+                var c = new Date(a.date);
+                var d = new Date(b.date);
+                return d-c;
+            });
+            res.status(200).json({ 
+                comments: sorted
+            })
+        })
+        .catch((e) => {
+            console.log(e)
+            res.status(409).json({ message: e.message });
+        });
+    })
+    .catch((err) => {
+        return res.status(404).json({ variant: 'danger', message: err })
+    })
+}
+
+exports.removeProjectComment = async (req, res) => {
+    const { parent_id, comment_id } = req.body
+
+    let project = await Project.findById(parent_id).populate('user')
+
+    if(!project) return res.status(404).json({ variant: 'danger', message: err })
+
+    const filtered = project.comment.filter(comments => comments.id !== comment_id)
+
+    project.comment = filtered
+
+    Project.findByIdAndUpdate(parent_id, project, { new: true }).populate('user')
+    .then((updated) => {
+        var collection = []
+        updated.comment.forEach((c) => {
+            collection.push(getProjectCommentInfo(c))
+        })
+        Promise.all(collection)
+        .then((comments_result) => {
+            let sorted = comments_result.sort(function(a, b) {
+                var c = new Date(a.date);
+                var d = new Date(b.date);
+                return d-c;
+            });
+            res.status(200).json({ 
+                comments: sorted
+            })
+        })
+        .catch((e) => {
+            console.log(e)
+            res.status(409).json({ message: e.message });
+        });
+    })
+    .catch((err) => {
+        console.log(err)
+        return res.status(404).json({ variant: 'danger', message: err })
+    })
+}
