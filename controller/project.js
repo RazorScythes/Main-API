@@ -838,3 +838,74 @@ exports.removeProjectComment = async (req, res) => {
         return res.status(404).json({ variant: 'danger', message: err })
     })
 }
+
+exports.getLatestProjects = async(req, res) => {
+    const { id, projectId } = req.body
+
+    let projects = await Project.find({}).sort({ createdAt: -1 }).populate('user').populate('categories')
+
+    if(id) {
+        const user = await Users.findById(id)
+
+        if(user.safe_content || user.safe_content === undefined)
+            projects = projects.filter((item) => item.strict !== true)
+
+        projects = projects.filter((item) => item.privacy !== true)
+
+        if(projects.length > 0) {
+            const latestProjects = projects.slice(0, 8)
+            const filterProjects = latestProjects.filter((project) => !project._id.equals(projectId))
+            const collection = []
+            filterProjects.map(obj => {
+                let newObj = {
+                    _id: obj._id,
+                    featured_image: obj.featured_image,
+                    post_title: obj.post_title,
+                    likes: obj.likes,
+                    createdAt: obj.createdAt,
+                    category_shortcut: obj.categories.shortcut
+                }
+                collection.push(newObj);
+            });
+
+            res.status(200).json({ 
+                result: collection
+            })
+        }
+        else {
+            res.status(404).json({ 
+                message: "No available projects"
+            })
+        }
+    }
+    else {
+        projects = projects.filter((item) => item.strict === false)
+        projects = projects.filter((item) => item.privacy !== true)
+
+        if(projects.length > 0) {
+            const latestProjects = projects.slice(0, 8)
+            const filterProjects = latestProjects.filter((project) => !project._id.equals(projectId))
+            const collection = []
+            filterProjects.map(obj => {
+                let newObj = {
+                    _id: obj._id,
+                    featured_image: obj.featured_image,
+                    post_title: obj.post_title,
+                    likes: obj.likes,
+                    createdAt: obj.createdAt,
+                    category_shortcut: obj.categories.shortcut
+                }
+                collection.push(newObj);
+            });
+
+            res.status(200).json({ 
+                result: collection
+            })
+        }
+        else {
+            res.status(404).json({ 
+                message: "No available projects"
+            })
+        }
+    }
+}
