@@ -206,7 +206,7 @@ exports.getAdminCategory = async(req, res) => {
 exports.getProjects = async(req, res) => {
     const { id } = req.body
 
-    let projects = await Project.find({}).sort({ createdAt: -1 }).populate('user')
+    let projects = await Project.find({}).sort({ createdAt: -1 }).populate('user').populate('categories')
 
     if(id) {
         const user = await Users.findById(id)
