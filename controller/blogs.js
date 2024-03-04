@@ -134,6 +134,9 @@ exports.getLatestBlogs = async(req, res) => {
                     featured_image: obj.featured_image,
                     post_title: obj.post_title,
                     likes: obj.likes,
+                    views: obj.views.length,
+                    comments: obj.comment.length,
+                    categories: obj.categories,
                     createdAt: obj.createdAt
                 }
                 collection.push(newObj);
@@ -163,6 +166,9 @@ exports.getLatestBlogs = async(req, res) => {
                     featured_image: obj.featured_image,
                     post_title: obj.post_title,
                     likes: obj.likes,
+                    views: obj.views.length,
+                    comments: obj.comment.length,
+                    categories: obj.categories,
                     createdAt: obj.createdAt
                 }
                 collection.push(newObj);
@@ -510,6 +516,9 @@ exports.addLatestBlogLikes = async (req, res) => {
                                 featured_image: obj.featured_image,
                                 post_title: obj.post_title,
                                 likes: obj.likes,
+                                views: obj.views.length,
+                                comments: obj.comment.length,
+                                categories: obj.categories,
                                 createdAt: obj.createdAt
                             }
                             collection.push(newObj);
@@ -535,9 +544,13 @@ exports.addLatestBlogLikes = async (req, res) => {
                         const collection = []
                         filterBlogs.map(obj => {
                             let newObj = {
+                                _id: obj._id,
                                 featured_image: obj.featured_image,
                                 post_title: obj.post_title,
                                 likes: obj.likes,
+                                views: obj.views.length,
+                                comments: obj.comment.length,
+                                categories: obj.categories,
                                 createdAt: obj.createdAt
                             }
                             collection.push(newObj);
