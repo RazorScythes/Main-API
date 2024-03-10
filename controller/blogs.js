@@ -2,6 +2,29 @@ const Users               = require('../models/user.model')
 const Blog                = require('../models/blogs.model')
 const uuid                = require('uuid');
 
+function countTags(arr) {
+    var tag_list = []
+    arr.forEach((item) => {
+        if(item.tags.length > 0) {
+            item.tags.forEach((tag) => {
+                tag_list.push(tag)
+            })
+        }
+    })
+
+    const counts = tag_list.reduce((acc, tag) => {
+        if (acc[tag]) {
+        acc[tag]++;
+        } else {
+        acc[tag] = 1;
+        }
+        return acc;
+    }, {});
+    
+    const result = Object.entries(counts).map(([tag, count]) => ({ tag, count }));
+    return result
+}
+
 exports.getBlogByID = async (req, res) => {
     const { id, blogId } = req.body
 
@@ -618,7 +641,8 @@ exports.getBlogsBySearchKey = async (req, res) => {
             });
 
             res.status(200).json({ 
-                result: collection
+                result: collection,
+                tags: countTags(deleteDuplicate)
             })
         }
         else {
@@ -642,7 +666,8 @@ exports.getBlogsBySearchKey = async (req, res) => {
             });
 
             res.status(200).json({ 
-                result: collection
+                result: collection,
+                tags: countTags(deleteDuplicate)
             })
         }
         else {
@@ -809,5 +834,84 @@ exports.addOneBlogLikesBySearchKey = async (req, res) => {
     catch (err) {
         console.log(err)
         return res.status(404).json({ variant: 'danger', message: 'invalid blogId' })
+    }
+}
+
+exports.blogsCountTags = async (req, res) => {
+    const { id } = req.body
+
+    var blogs = await Blog.find({}).sort({ createdAt: -1 }).populate('user')
+    var tag_list = []
+
+    if(id) {
+        const user = await Users.findById(id)
+
+        if(user.safe_content || user.safe_content === undefined)
+            blogs = blogs.filter((item) => item.strict !== true)
+
+        blogs = blogs.filter((item) => item.privacy !== true)
+
+        if(blogs.length > 0) {
+            blogs.forEach((item) => {
+                if(item.tags.length > 0) {
+                    item.tags.forEach((tag) => {
+                        tag_list.push(tag)
+                    })
+                }
+            })
+
+            const counts = tag_list.reduce((acc, tag) => {
+                if (acc[tag]) {
+                acc[tag]++;
+                } else {
+                acc[tag] = 1;
+                }
+                return acc;
+            }, {});
+            
+            const result = Object.entries(counts).map(([tag, count]) => ({ tag, count }));
+            res.status(200).json({
+                result: result
+            })
+        }
+        else {
+            res.status(404).json({ 
+                message: "No available blogs"
+            })
+        }
+    }
+    else {
+        blogs = blogs.filter((item) => item.strict === false)
+        blogs = blogs.filter((item) => item.privacy !== true)
+
+        if(blogs.length > 0) {
+            blogs.forEach((item) => {
+                if(item.tags.length > 0) {
+                    item.tags.forEach((tag) => {
+                        tag_list.push(tag)
+                    })
+                }
+            })
+
+            const counts = tag_list.reduce((acc, tag) => {
+                if (acc[tag]) {
+                acc[tag]++;
+                } else {
+                acc[tag] = 1;
+                }
+                return acc;
+            }, {});
+            
+            const result = Object.entries(counts).map(([tag, count]) => ({ tag, count }));
+
+            res.status(200).json({
+                result: result
+            })
+        }
+        else {
+            res.status(404).json({ 
+                message: "No available blogs"
+            })
+        }
     }
 }

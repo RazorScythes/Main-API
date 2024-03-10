@@ -19,7 +19,7 @@ const allowCors = fn => async (req, res) => {
     return await fn(req, res)
 }
 
-const { getBlogs, getBlogsBySearchKey, getBlogByID, getBlogComments, uploadBlogComment, addOneBlogLikesBySearchKey, removeBlogComment, countBlogCategories, countBlogCategoriesBySearchKey, addOneBlogViews, addOneBlogLikes, getLatestBlogs, addLatestBlogLikes } = require('../controller/blogs')
+const { blogsCountTags, getBlogs, getBlogsBySearchKey, getBlogByID, getBlogComments, uploadBlogComment, addOneBlogLikesBySearchKey, removeBlogComment, countBlogCategories, countBlogCategoriesBySearchKey, addOneBlogViews, addOneBlogLikes, getLatestBlogs, addLatestBlogLikes } = require('../controller/blogs')
 
 router.post('/getBlogByID', allowCors(getBlogByID))
 router.post('/getBlogs', allowCors(getBlogs))
@@ -34,5 +34,6 @@ router.post('/addOneBlogViews', allowCors(addOneBlogViews))
 router.post('/addOneBlogLikes', allowCors(addOneBlogLikes))
 router.post('/addOneBlogLikesBySearchKey', allowCors(addOneBlogLikesBySearchKey))
 router.post('/addLatestBlogLikes', allowCors(addLatestBlogLikes))
+router.post('/blogsCountTags', allowCors(blogsCountTags))
 
 module.exports = router 
