@@ -1,4 +1,5 @@
 const Game                = require('../models/games.model')
+const Category            = require('../models/category.model')
 const Blog                = require('../models/blogs.model')
 const Users               = require('../models/user.model')
   
@@ -544,6 +545,111 @@ exports.getRelatedGames = async(req, res) => {
     catch (err) {
         console.log(err)
         return res.status(404).json({ variant: 'danger', message: 'invalid videoId' })
+    }
+}
+
+// async function testCategoryCount() {
+//     const games = await Game.find({}).sort({ createdAt: -1 }).populate('user');
+//     const categories = await Category.find({ type: 'games' });
+
+//     const categoryCounts = {};
+
+//     // Initialize categoryCounts with 0 counts for each category
+//     categories.forEach(category => {
+//         categoryCounts[category.category] = 0;
+//     });
+
+//     // Count occurrences of each category in games
+//     games.forEach(game => {
+//         if (categoryCounts[game.category] !== undefined) {
+//             categoryCounts[game.category]++;
+//         }
+//     });
+
+//     const collection = Object.keys(categoryCounts).map(category => ({
+//         category,
+//         count: categoryCounts[category]
+//     }));
+
+//     console.log(collection);
+// }
+// testCategoryCount();
+
+exports.categoriesCount = async (req, res) => {
+    const { id } = req.body
+
+    var games = await Game.find({}).sort({ createdAt: -1 }).populate('user')
+    const categories = await Category.find({ type: 'games' });
+
+    var tag_list = []
+
+    if(id) {
+        const user = await Users.findById(id)
+
+        if(user.safe_content || user.safe_content === undefined)
+            games = games.filter((item) => item.strict !== true)
+
+        games = games.filter((item) => item.privacy !== true)
+
+        if(games.length > 0) {
+            const categoryCounts = {};
+
+            categories.forEach(category => {
+                categoryCounts[category.category] = 0;
+            });
+
+            games.forEach(game => {
+                if (categoryCounts[game.category] !== undefined) {
+                    categoryCounts[game.category]++;
+                }
+            });
+
+            const collection = Object.keys(categoryCounts).map(category => ({
+                category,
+                count: categoryCounts[category]
+            }));
+
+            res.status(200).json({
+                result: collection
+            })
+        }
+        else {
+            res.status(404).json({ 
+                message: "No available games"
+            })
+        }
+    }
+    else {
+        games = games.filter((item) => item.strict === false)
+        games = games.filter((item) => item.privacy !== true)
+
+        if(games.length > 0) {
+            const categoryCounts = {};
+
+            categories.forEach(category => {
+                categoryCounts[category.category] = 0;
+            });
+
+            games.forEach(game => {
+                if (categoryCounts[game.category] !== undefined) {
+                    categoryCounts[game.category]++;
+                }
+            });
+
+            const collection = Object.keys(categoryCounts).map(category => ({
+                category,
+                count: categoryCounts[category]
+            }));
+
+            res.status(200).json({
+                result: collection
+            })
+        }
+        else {
+            res.status(404).json({ 
+                message: "No available games"
+            })
+        }
     }
 }
 

@@ -9,6 +9,7 @@ const gameSchema = new Schema({
     featured_image: { type: String },
     title: { type: String },
     description: { type: String },
+    category: { type: String },
     tags: { type: Array },
     gallery: { type: Array},
     download_link: { type: Array },

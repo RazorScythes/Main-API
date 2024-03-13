@@ -227,3 +227,90 @@ defaultAdmin()
 //         console.log(`Category ${data.category} created`
 //     ));
 // })
+
+// const game_categories = [
+//     {
+//         category: 'Simulation',
+//         shortcut: 'Simulation',
+//         type: 'games'
+//     },
+//     {
+//         category: 'Games 3D',
+//         shortcut: 'Games 3D',
+//         type: 'games'
+//     },
+//     {
+//         category: 'Animated',
+//         shortcut: 'Animated',
+//         type: 'games'
+//     },
+//     {
+//         category: 'Extreme',
+//         shortcut: 'Extreme',
+//         type: 'games'
+//     },
+//     {
+//         category: 'Puzzle',
+//         shortcut: 'Puzzle',
+//         type: 'games'
+//     },
+//     {
+//         category: 'Virtual Reality',
+//         shortcut: 'Virtual Reality',
+//         type: 'games'
+//     },
+//     {
+//         category: 'Visual Novel',
+//         shortcut: 'Visual Novel',
+//         type: 'games'
+//     },
+//     {
+//         category: 'RPG',
+//         shortcut: 'RPG',
+//         type: 'games'
+//     },
+//     {
+//         category: 'Horror',
+//         shortcut: 'Horror',
+//         type: 'games'
+//     },
+//     {
+//         category: 'Fighting',
+//         shortcut: 'Fighting',
+//         type: 'games'
+//     },
+//     {
+//         category: 'Racing',
+//         shortcut: 'Racing',
+//         type: 'games'
+//     },
+//     {
+//         category: 'Shooting',
+//         shortcut: 'Shooting',
+//         type: 'games'
+//     },
+//     {
+//         category: 'Flash',
+//         shortcut: 'Flash',
+//         type: 'games'
+//     },
+//     {
+//         category: 'Non - Hen',
+//         shortcut: 'Non - Hen',
+//         type: 'games'
+//     },
+//     {
+//         category: 'Others',
+//         shortcut: 'Others',
+//         type: 'games'
+//     },
+// ]
+
+// const Category                      = require('./models/category.model')
+
+// game_categories.forEach((item) => {
+//     const newAccount = new Category(item)
+//     newAccount.save().then((data) =>
+//         console.log(`Category ${data.category} created`
+//     ));
+// })
