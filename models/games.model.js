@@ -22,6 +22,9 @@ const gameSchema = new Schema({
         platform: { type: String }
     },
     leave_uploader_message: { type: String },
+    views: { type: Array },
+    likes: { type: [String] },
+    dislikes: { type: [String] },
     download_count: { type: Array },
     landscape: { type: Boolean },
     carousel: { type: Boolean },

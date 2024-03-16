@@ -733,6 +733,29 @@ exports.countTags = async (req, res) => {
     }
 }
 
+function countFilterTags(arr) {
+    var tag_list = []
+    arr.forEach((item) => {
+        if(item.tags.length > 0) {
+            item.tags.forEach((tag) => {
+                tag_list.push(tag)
+            })
+        }
+    })
+
+    const counts = tag_list.reduce((acc, tag) => {
+        if (acc[tag]) {
+        acc[tag]++;
+        } else {
+        acc[tag] = 1;
+        }
+        return acc;
+    }, {});
+    
+    const result = Object.entries(counts).map(([tag, count]) => ({ tag, count }));
+    return result
+}
+
 exports.getGameByTag = async (req, res) => {
     const { id, tag } = req.body
 
@@ -847,7 +870,8 @@ exports.getGameByDeveloper = async (req, res) => {
             });
 
             res.status(200).json({ 
-                result: collection
+                result: collection,
+                tags: countFilterTags(deleteDuplicate)
             })
         }
         else {
@@ -871,7 +895,8 @@ exports.getGameByDeveloper = async (req, res) => {
             });
 
             res.status(200).json({ 
-                result: collection
+                result: collection,
+                tags: countFilterTags(deleteDuplicate)
             })
         }
         else {
@@ -921,7 +946,8 @@ exports.getGameBySearchKey = async (req, res) => {
             });
 
             res.status(200).json({ 
-                result: collection
+                result: collection,
+                tags: countFilterTags(deleteDuplicate)
             })
         }
         else {
@@ -945,7 +971,8 @@ exports.getGameBySearchKey = async (req, res) => {
             });
 
             res.status(200).json({ 
-                result: collection
+                result: collection,
+                tags: countFilterTags(deleteDuplicate)
             })
         }
         else {
