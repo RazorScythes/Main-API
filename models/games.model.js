@@ -27,6 +27,7 @@ const gameSchema = new Schema({
     dislikes: { type: [String] },
     download_count: { type: Array },
     landscape: { type: Boolean },
+    comment: { type: Array },
     carousel: { type: Boolean },
     strict: { type: Boolean },
     privacy: { type: Boolean },

@@ -2,6 +2,7 @@ const Game                = require('../models/games.model')
 const Category            = require('../models/category.model')
 const Blog                = require('../models/blogs.model')
 const Users               = require('../models/user.model')
+const uuid                = require('uuid');
   
 exports.getGameByID = async (req, res) => {
     const { id, gameId, access_key, cookie_id } = req.body
@@ -1115,4 +1116,140 @@ exports.addRecentGamingBlogLikes = async (req, res) => {
         console.log(err)
         return res.status(404).json({ variant: 'danger', message: 'invalid blogId' })
     }
+}
+
+function getGameCommentInfo(data) {
+    return new Promise(async (resolve) => {
+        const user = await Users.findById(data.user)
+        const obj = {
+            id: data.id,
+            parent_id: data.parent_id,
+            username: user.username,
+            avatar: user.avatar,
+            comments: data.comments,
+            date: data.date
+        }
+        resolve(obj)
+    });
+}
+
+exports.getGameComments = async (req, res) => {
+    const { gameId } = req.body
+
+    if(!gameId) return res.status(404).json({ variant: 'danger', message: err })
+
+    try {
+        let game = await Game.findById(gameId).populate('user')
+
+        if(!game) return res.status(404).json({ variant: 'danger', message: err })
+
+        var collection = []
+        game.comment.forEach((c) => {
+            collection.push(getGameCommentInfo(c))
+        })
+        Promise.all(collection)
+        .then((comments_result) => {
+            game.comment = comments_result
+            let sorted = game.comment.sort(function(a, b) {
+                var c = new Date(a.date);
+                var d = new Date(b.date);
+                return d-c;
+            });
+
+            res.status(200).json({ 
+                comments: sorted
+            })
+        })
+        .catch((e) => {
+            console.log(e)
+            res.status(409).json({ message: e.message });
+        });
+    }
+    catch (err) {
+        console.log(err)
+        return res.status(404).json({ variant: 'danger', message: 'invalid videoId' })
+    }
+}
+
+exports.uploadGameComment = async (req, res) => {
+    const { id, avatar, user, comment } = req.body
+
+    let game = await Game.findById(id).populate('user')
+
+    if(!game) return res.status(404).json({ variant: 'danger', message: err })
+
+    const newComment = {
+        id: uuid.v4(),
+        parent_id: id,
+        user: user,
+        comments: comment,
+        date: new Date()
+    }
+
+    game.comment.push(newComment)
+   
+    Game.findByIdAndUpdate(id, game, { new: true }).populate('user')
+    .then((updated) => {
+        var collection = []
+        updated.comment.forEach((c) => {
+            collection.push(getGameCommentInfo(c))
+        })
+        Promise.all(collection)
+        .then((comments_result) => {
+            let sorted = comments_result.sort(function(a, b) {
+                var c = new Date(a.date);
+                var d = new Date(b.date);
+                return d-c;
+            });
+            res.status(200).json({ 
+                comments: sorted
+            })
+        })
+        .catch((e) => {
+            console.log(e)
+            res.status(409).json({ message: e.message });
+        });
+    })
+    .catch((err) => {
+        return res.status(404).json({ variant: 'danger', message: err })
+    })
+}
+
+exports.removeGameComment = async (req, res) => {
+    const { parent_id, comment_id } = req.body
+
+    let game = await Game.findById(parent_id).populate('user')
+
+    if(!game) return res.status(404).json({ variant: 'danger', message: err })
+
+    const filtered = game.comment.filter(comments => comments.id !== comment_id)
+
+    game.comment = filtered
+
+    Game.findByIdAndUpdate(parent_id, game, { new: true }).populate('user')
+    .then((updated) => {
+        var collection = []
+        updated.comment.forEach((c) => {
+            collection.push(getGameCommentInfo(c))
+        })
+        Promise.all(collection)
+        .then((comments_result) => {
+            let sorted = comments_result.sort(function(a, b) {
+                var c = new Date(a.date);
+                var d = new Date(b.date);
+                return d-c;
+            });
+            res.status(200).json({ 
+                comments: sorted
+            })
+        })
+        .catch((e) => {
+            console.log(e)
+            res.status(409).json({ message: e.message });
+        });
+    })
+    .catch((err) => {
+        console.log(err)
+        return res.status(404).json({ variant: 'danger', message: err })
+    })
 }

@@ -19,7 +19,7 @@ const allowCors = fn => async (req, res) => {
     return await fn(req, res)
 }
 
-const { getGames, categoriesCount, addOneDownload, updateGameAccessKey, getGameByID, getRelatedGames, addRatings, countTags, getGameByTag, getGameBySearchKey, getGameByDeveloper, getRecentGameBlog, addRecentGamingBlogLikes } = require('../controller/game')
+const { getGameComments, uploadGameComment, removeGameComment, getGames, categoriesCount, addOneDownload, updateGameAccessKey, getGameByID, getRelatedGames, addRatings, countTags, getGameByTag, getGameBySearchKey, getGameByDeveloper, getRecentGameBlog, addRecentGamingBlogLikes } = require('../controller/game')
 
 router.post('/getGames', allowCors(getGames))
 router.post('/getGameByID', allowCors(getGameByID))
@@ -34,5 +34,9 @@ router.post('/getRecentGameBlog', allowCors(getRecentGameBlog))
 router.post('/addRecentGamingBlogLikes', allowCors(addRecentGamingBlogLikes))
 router.post('/addOneDownload', allowCors(addOneDownload))
 router.post('/updateGameAccessKey', allowCors(updateGameAccessKey))
+
+router.post('/getGameComments', allowCors(getGameComments))
+router.post('/uploadGameComment', allowCors(uploadGameComment))
+router.post('/removeGameComment', allowCors(removeGameComment))
 
 module.exports = router 
