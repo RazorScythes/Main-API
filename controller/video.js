@@ -67,6 +67,90 @@ exports.getVideos = async (req, res) => {
     }
 }
 
+exports.uploadLists = async (req, res) => {
+    const { id, uploader_id } = req.body
+
+    let videos = await Video.find({ user: uploader_id }).sort({ createdAt: -1 }).populate('user')
+
+    if(id) {
+        const user = await Users.findById(id)
+        const archive = await ArchiveName.findOne({ user: id, archive_name: 'Videos' })
+
+        if(user.safe_content || user.safe_content === undefined)
+            videos = videos.filter((item) => item.strict !== true)
+
+        if(videos.length > 0) {
+            const collection = []
+            videos.map(obj => {
+                obj['user'] = {
+                    username: obj.user.username,
+                    avatar: obj.user.avatar
+                }
+                const jsonData = {
+                    _id: obj._id,
+                    title: obj.title,
+                    views: obj.views,
+                    link: obj.link,
+                    strict: obj.strict,
+                    likes: obj.likes,
+                    views: obj.views,
+                    user: obj.user,
+                    privacy: obj.privacy,
+                    file_size: obj.file_size ? obj.file_size : "",
+                    createdAt: obj.createdAt
+                }
+                collection.push(jsonData);
+            });
+
+            res.status(200).json({ 
+                result: collection
+            })
+        }
+        else {
+            res.status(404).json({ 
+                message: "No available videos"
+            })
+        }
+    }
+    else {
+        videos = videos.filter((item) => item.strict === false)
+        videos = videos.filter((item) => item.privacy !== true)
+
+        if(videos.length > 0) {
+            const collection = []
+            videos.map(obj => {
+                obj['user'] = {
+                    username: obj.user.username,
+                    avatar: obj.user.avatar
+                }
+                const jsonData = {
+                    _id: obj._id,
+                    title: obj.title,
+                    views: obj.views,
+                    link: obj.link,
+                    strict: obj.strict,
+                    likes: obj.likes,
+                    views: obj.views,
+                    user: obj.user,
+                    privacy: obj.privacy,
+                    file_size: obj.file_size ? obj.file_size : "",
+                    createdAt: obj.createdAt
+                }
+                collection.push(jsonData);
+            });
+
+            res.status(200).json({ 
+                result: collection
+            })
+        }
+        else {
+            res.status(404).json({ 
+                message: "No available videos"
+            })
+        }
+    }
+}
+
 exports.addOneLikes = async (req, res) => {
     const { id, likes, dislikes } = req.body
 
@@ -163,6 +247,7 @@ exports.getVideoByID = async (req, res) => {
         if(!video) return res.status(404).json({ variant: 'danger', message: "video id not found", notFound: true })
 
         const result = {
+            id: video.user._id,
             username: video.user.username,
             avatar: video.user.avatar,
             video
@@ -171,25 +256,27 @@ exports.getVideoByID = async (req, res) => {
 
         if(user) {
             const archive = await ArchiveName.findOne({ user: id, archive_name: 'Videos' })
+            const save_archive = await Archive.find({ user: id, content_type: 'Videos', content_id: videoId })
+         
             if(user.safe_content || user.safe_content === undefined) {
                 if(video.strict) { res.status(409).json({ forbiden: 'strict'}) }
                 else if(video.privacy) { 
-                    if(video.access_key === access_key || video_uid.equals(id)) res.status(200).json({ result: result, archiveList: archive })
+                    if(video.access_key === access_key || video_uid.equals(id)) res.status(200).json({ result: result, archiveList: archive, archiveSaveLists: save_archive })
                     else if(!access_key) res.status(409).json({ forbiden: 'private' }) 
                     else res.status(409).json({ forbiden: 'access_invalid' }) 
                 }
-                else { res.status(200).json({ result: result, archiveList: archive }) }
+                else { res.status(200).json({ result: result, archiveList: archive, archiveSaveLists: save_archive }) }
             }
             else {
                 if(video.privacy) { 
                     if(video.access_key === access_key) {
-                        if(video.access_key === access_key || video_uid.equals(id)) res.status(200).json({ result: result, archiveList: archive })
+                        if(video.access_key === access_key || video_uid.equals(id)) res.status(200).json({ result: result, archiveList: archive, archiveSaveLists: save_archive })
                         else if(!access_key) res.status(409).json({ forbiden: 'private' }) 
                         else res.status(409).json({ forbiden: 'access_invalid' }) 
                     }
                     res.status(409).json({ forbiden: 'private' }) 
                 }
-                else { res.status(200).json({ result: result, archiveList: archive }) }
+                else { res.status(200).json({ result: result, archiveList: archive, archiveSaveLists: save_archive }) }
             }
         }
         else {
@@ -197,7 +284,7 @@ exports.getVideoByID = async (req, res) => {
             else if(video.privacy) { 
                 if(video.access_key === access_key) {
                     if(!access_key) res.status(409).json({ forbiden: 'private' }) 
-                    else if(video.access_key === access_key) res.status(200).json({ result: result, archiveList: archive })
+                    else if(video.access_key === access_key) res.status(200).json({ result: result, archiveList: [] })
                     else res.status(409).json({ forbiden: 'access_invalid' }) 
                 }
                 res.status(409).json({ forbiden: 'private' }) 
@@ -477,6 +564,8 @@ function getVideoDataById(id) {
             views: video.views,
             link: video.link,
             strict: video.strict,
+            likes: video.likes,
+            views: video.views,
             privacy: video.privacy,
             file_size: video.file_size ? video.file_size : "",
             createdAt: video.createdAt
@@ -758,7 +847,7 @@ exports.removeComment = async (req, res) => {
 
 exports.addToWatchLater = async (req, res) => {
     const { id, videoId, archiveId, directory } = req.body
-    console.log(req.body)
+
     if(!id || !videoId) 
         return  res.status(404).json({ 
                     sideAlert: {
@@ -782,8 +871,11 @@ exports.addToWatchLater = async (req, res) => {
         const newWatchLater = new Archive(newWatchLaterObj)
 
         newWatchLater.save()
-        .then(() => {
+        .then(async () => {
+            const save_archive = await Archive.find({ user: id, content_type: 'Videos', content_id: videoId })
+
             return res.status(200).json({ 
+                archiveSaveLists: save_archive,
                 sideAlert: {
                     variant: "success",
                     heading: "Added to Watch Later",
