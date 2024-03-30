@@ -19,7 +19,14 @@ const videoSchema = new Schema({
     access_key: { type: String },
     downloadable: { type: Boolean },
     related_videos: { type: Array },
-    file_size: { type: String }
+    file_size: { type: String },
+    alternateLink: { type: String },
+    downloadUrl: { type: String },
+    embedLink: { type: String },
+    fileExtension: { type: String },
+    webContentLink: { type: String },
+    thumbnailLink: { type: String },
+    duration: { type: String }
 },{
     timestamps: true,
     collection: "video"

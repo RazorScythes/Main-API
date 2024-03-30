@@ -602,7 +602,7 @@ exports.bulkRemoveGame = async (req, res) => {
 }
 
 exports.updateVideoProperties = async (req, res) => {
-    const { file_id, size } = req.body
+    const { file_id, size, alternateLink, downloadUrl, embedLink, fileExtension, webContentLink, thumbnailLink, duration } = req.body
     
     try {
         const regex = new RegExp(file_id, 'i'); 
@@ -610,7 +610,16 @@ exports.updateVideoProperties = async (req, res) => {
         const foundDocuments = await Video.find({ link: regex });
         
         if(foundDocuments.length > 0) {
-            const updateVideo = await Video.findByIdAndUpdate(foundDocuments[0]._id, { file_size: convertSizeToReadable(size) }, { new: true })
+            const updateVideo = await Video.findByIdAndUpdate(foundDocuments[0]._id, { 
+                file_size: convertSizeToReadable(size),
+                alternateLink: alternateLink,
+                downloadUrl: downloadUrl,
+                embedLink: embedLink,
+                fileExtension: fileExtension,
+                webContentLink: webContentLink,
+                thumbnailLink: thumbnailLink,
+                duration: duration
+            }, { new: true })
             return res.status(200).json({ 
                 variant: 'success',
                 message: "Video Uploaded Successfully"

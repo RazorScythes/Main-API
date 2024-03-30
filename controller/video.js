@@ -97,7 +97,11 @@ exports.uploadLists = async (req, res) => {
                     user: obj.user,
                     privacy: obj.privacy,
                     file_size: obj.file_size ? obj.file_size : "",
-                    createdAt: obj.createdAt
+                    createdAt: obj.createdAt,
+                    downloadUrl: obj.downloadUrl,
+                    thumbnailLink: obj.thumbnailLink,
+                    duration: obj.duration,
+                    embedLink: obj.embedLink,
                 }
                 collection.push(jsonData);
             });
@@ -134,7 +138,11 @@ exports.uploadLists = async (req, res) => {
                     user: obj.user,
                     privacy: obj.privacy,
                     file_size: obj.file_size ? obj.file_size : "",
-                    createdAt: obj.createdAt
+                    createdAt: obj.createdAt,
+                    downloadUrl: obj.downloadUrl,
+                    thumbnailLink: obj.thumbnailLink,
+                    duration: obj.duration,
+                    embedLink: obj.embedLink,
                 }
                 collection.push(jsonData);
             });
@@ -568,7 +576,11 @@ function getVideoDataById(id) {
             views: video.views,
             privacy: video.privacy,
             file_size: video.file_size ? video.file_size : "",
-            createdAt: video.createdAt
+            createdAt: video.createdAt,
+            downloadUrl: video.downloadUrl,
+            thumbnailLink: video.thumbnailLink,
+            duration: video.duration,
+            embedLink: video.embedLink,
         }
         resolve(jsonData)
     });
