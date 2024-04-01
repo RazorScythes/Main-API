@@ -565,7 +565,7 @@ function getRandomIndices(array, loopCount) {
 
 function getVideoDataById(id) {
     return new Promise(async (resolve) => {
-        const video = await Video.findById(id)
+        const video = await Video.findById(id).populate('user')
         const jsonData = {
             _id: video._id,
             title: video.title,
@@ -581,6 +581,7 @@ function getVideoDataById(id) {
             thumbnailLink: video.thumbnailLink,
             duration: video.duration,
             embedLink: video.embedLink,
+            username: video.user.username
         }
         resolve(jsonData)
     });
