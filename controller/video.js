@@ -1,6 +1,7 @@
 const Video               = require('../models/video.model')
 const ArchiveName         = require('../models/archiveName.model')
-const Archive         = require('../models/archive.model')
+const Archive             = require('../models/archive.model')
+const Reports             = require('../models/reports.model')
 const Users               = require('../models/user.model')
 const VideoArchive        = require('../models/videoArchive.model')
 const uuid                = require('uuid');
@@ -1086,6 +1087,33 @@ function uploadSingleImage(image, folder){
             console.log(err)
             reject(error);
         }
+    })
+}
+
+exports.uploadReport = async (req, res) => {
+    const { data } = req.body
+
+    const newReport = new Reports(data)
+
+    newReport.save()
+    .then(async () => {
+        return res.status(200).json({ 
+            sideAlert: {
+                variant: "success",
+                heading: "Report Submitted",
+                paragraph: "An admin will review this"
+            }
+        })
+    })
+    .catch((err) => {
+        console.log(err)
+        return res.status(404).json({ 
+            sideAlert: {
+                variant: "danger",
+                heading: "Failed to Submit Report",
+                paragraph: "Please try again later"
+            }
+        })
     })
 }
 
