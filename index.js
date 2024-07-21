@@ -11,6 +11,7 @@ const bcrypt                    = require("bcryptjs")
 // tools.updateGoogledriveID()
 // const cookieParser              = require('cookie-parser')
 // const expressSession            = require('express-session')
+const admin_router              = require('./api/admin')
 const auth_router               = require('./api/auth')
 const portfolio_router          = require('./api/portfolio')
 const settings_router           = require('./api/settings')
@@ -100,6 +101,7 @@ app.use(cors({
 
 app.use(express.static(path.join(__dirname,'/tmp')));
 
+app.use('/admin', admin_router)
 app.use('/auth', auth_router)
 app.use('/portfolio', portfolio_router)
 app.use('/settings', settings_router)

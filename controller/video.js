@@ -244,7 +244,7 @@ exports.addOneViews = async (req, res) => {
 exports.getVideoByID = async (req, res) => {
     const { id, videoId, access_key } = req.body
 
-    if(!videoId) return res.status(404).json({ variant: 'danger', message: "video id not found", notFound: true })
+    if(!videoId) return res.status(404).json({ variant: 'danger', message: "invalid videoId", notFound: true })
 
     try {
         let video = await Video.findById(videoId).populate('user')
@@ -307,6 +307,29 @@ exports.getVideoByID = async (req, res) => {
     }
 }
 
+function countFilterTags(arr) {
+    var tag_list = []
+    arr.forEach((item) => {
+        if(item.tags.length > 0) {
+            item.tags.forEach((tag) => {
+                tag_list.push(tag)
+            })
+        }
+    })
+
+    const counts = tag_list.reduce((acc, tag) => {
+        if (acc[tag]) {
+        acc[tag]++;
+        } else {
+        acc[tag] = 1;
+        }
+        return acc;
+    }, {});
+    
+    const result = Object.entries(counts).map(([tag, count]) => ({ tag, count }));
+    return result
+}
+
 exports.getVideoByTag = async (req, res) => {
     const { id, tag } = req.body
 
@@ -338,7 +361,8 @@ exports.getVideoByTag = async (req, res) => {
         if(deleteDuplicate.length > 0) {
             res.status(200).json({ 
                 result: deleteDuplicate,
-                archiveList: archive
+                archiveList: archive,
+                tags: countFilterTags(deleteDuplicate)
             })
         }
         else {
@@ -353,7 +377,8 @@ exports.getVideoByTag = async (req, res) => {
 
         if(deleteDuplicate.length > 0) {
             res.status(200).json({ 
-                result: deleteDuplicate
+                result: deleteDuplicate,
+                tags: countFilterTags(deleteDuplicate)
             })
         }
         else {
@@ -396,7 +421,8 @@ exports.getVideoByArtist = async (req, res) => {
         if(deleteDuplicate.length > 0) {
             res.status(200).json({ 
                 result: deleteDuplicate,
-                archiveList: archive
+                archiveList: archive,
+                tags: countFilterTags(deleteDuplicate)
             })
         }
         else {
@@ -411,7 +437,8 @@ exports.getVideoByArtist = async (req, res) => {
 
         if(deleteDuplicate.length > 0) {
             res.status(200).json({ 
-                result: deleteDuplicate
+                result: deleteDuplicate,
+                tags: countFilterTags(deleteDuplicate)
             })
         }
         else {
@@ -454,8 +481,9 @@ exports.getVideoBySearchKey = async (req, res) => {
         if(deleteDuplicate.length > 0) {
             res.status(200).json({ 
                 result: deleteDuplicate,
-                archiveList: archive
-            })
+                archiveList: archive,
+                tags: countFilterTags(deleteDuplicate)
+            })  
         }
         else {
             res.status(404).json({ 
@@ -469,7 +497,8 @@ exports.getVideoBySearchKey = async (req, res) => {
 
         if(deleteDuplicate.length > 0) {
             res.status(200).json({ 
-                result: deleteDuplicate
+                result: deleteDuplicate,
+                tags: countFilterTags(deleteDuplicate)
             })
         }
         else {
@@ -498,7 +527,7 @@ function getVideoCommentInfo(data) {
 exports.getComments = async (req, res) => {
     const { videoId } = req.body
 
-    if(!videoId) return res.status(404).json({ variant: 'danger', message: err })
+    if(!videoId) return res.status(404).json({ variant: 'danger', message: 'invalid videoId' })
 
     try {
         let video = await Video.findById(videoId).populate('user')
@@ -591,7 +620,7 @@ function getVideoDataById(id) {
 exports.getRelatedVideos = async(req, res) => {
     const { id, videoId } = req.body
 
-    if(!videoId) return res.status(404).json({ variant: 'danger', message: err })
+    if(!videoId) return res.status(404).json({ variant: 'danger', message: 'invalid videoId' })
     
     try {
         let video = await Video.findById(videoId).populate('user')
