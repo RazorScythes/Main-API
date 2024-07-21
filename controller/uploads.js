@@ -2,6 +2,7 @@ const Video                 = require('../models/video.model')
 const Game                  = require('../models/games.model')
 const Users                 = require('../models/user.model')
 const Blog                  = require('../models/blogs.model')
+const ActivityLogs          = require('../models/activityLogs.model')
 const mongoose              = require('mongoose');
 const path                  = require('path')
 const uuid                  = require('uuid');
@@ -168,6 +169,26 @@ function deleteSingleImage (delete_id, folder) {
     })
 }
 
+exports.logsActivity = async (req, res) => {
+    const { data } = req.body
+
+    try {
+        const activity_logs = new ActivityLogs(data)
+        await activity_logs.save()
+
+        res.status(200).json({ 
+            message: 'logs created'
+        });
+    }
+    catch(err) {
+        console.log(err)
+        return res.status(404).json({ 
+            variant: 'danger',
+            message: "Failed to log data"
+        });
+    }
+}
+
 exports.getUserVideo = async (req, res) => {
     const { id } = req.body
 
@@ -240,7 +261,7 @@ exports.getUserBlog = async (req, res) => {
 }
 
 exports.uploadVideo = async (req, res) => {
-    const { id, data, size } = req.body
+    const { id, data, size, isbulk } = req.body
 
     var find_duplication = await Video.find({ link: data.link })
 
@@ -253,7 +274,12 @@ exports.uploadVideo = async (req, res) => {
         const newVideo = new Video({ user: id, ...data, file_size: size ? convertSizeToReadable(size) : 0 })
 
         await newVideo.save()
-        .then(async () => {
+        .then(async (response) => {
+            if(!isbulk) {
+                const activity_logs = new ActivityLogs({ user: id, id: response._id, type: 'video', method: 'POST', message: 'Uploaded single video' })
+                await activity_logs.save()
+            }
+
             let video = await Video.find({ user: id }).sort({ createdAt: -1 })
     
             res.status(200).json({ 
@@ -293,7 +319,10 @@ exports.uploadGame = async (req, res) => {
     const newGame = new Game({ user: id, ...data })
 
     await newGame.save()
-    .then(async () => {
+    .then(async (response) => {
+        const activity_logs = new ActivityLogs({ user: id, id: response._id, type: 'game', method: 'POST', message: 'Uploaded a game' })
+        await activity_logs.save()
+
         let games = await Game.find({ user: id }).sort({ createdAt: -1 })
 
         res.status(200).json({ 
@@ -406,6 +435,9 @@ exports.editVideo = async (req, res) => {
     Video.findByIdAndUpdate(data._id, data, { new: true }).populate('user')
     .then(async (result) => {
         try {
+            const activity_logs = new ActivityLogs({ user: id, id: data._id, type: 'video', method: 'PATCH', message: 'Updated video' })
+            await activity_logs.save()
+
             let videos = await Video.find({ user: id }).sort({ createdAt: -1 })
             res.status(200).json({ 
                 variant: 'success',
@@ -433,6 +465,9 @@ exports.editGame = async (req, res) => {
     Game.findByIdAndUpdate(data._id, data, { new: true }).populate('user')
     .then(async (result) => {
         try {
+            const activity_logs = new ActivityLogs({ user: id, id: data._id, type: 'game', method: 'PATCH', message: 'Updated game' })
+            await activity_logs.save()
+
             let games = await Game.find({ user: id }).sort({ createdAt: -1 })
             res.status(200).json({ 
                 variant: 'success',
@@ -463,6 +498,9 @@ exports.removeVideo = async (req, res) => {
         try {
             let videos = await Video.find({ user: id }).sort({ createdAt: -1 })
 
+            const activity_logs = new ActivityLogs({ user: id, id: video_id, type: 'video', method: 'DELETE', message: 'User deleted video' })
+            await activity_logs.save()
+
             res.status(200).json({ 
                 result: videos,
             });
@@ -490,6 +528,9 @@ exports.bulkRemoveVideo = async (req, res) => {
     Video.deleteMany({ _id: { $in: objectIdsToDelete } })
     .then(async (result) => {
         try {
+            const activity_logs = new ActivityLogs({ user: id, id: 'bulk', type: 'video', method: 'DELETE', message: `Deleted ${videos_id.length} videos` })
+            await activity_logs.save()
+
             let videos = await Video.find({ user: id }).sort({ createdAt: -1 })
 
             res.status(200).json({ 
@@ -518,6 +559,9 @@ exports.removeGame = async (req, res) => {
     Game.findByIdAndDelete(game_id)
     .then(async () => {
         try {
+            const activity_logs = new ActivityLogs({ user: id, id: game_id, type: 'game', method: 'DELETE', message: 'User deleted game' })
+            await activity_logs.save()
+
             let games = await Game.find({ user: id }).sort({ createdAt: -1 })
 
             res.status(200).json({ 
@@ -581,6 +625,9 @@ exports.bulkRemoveGame = async (req, res) => {
     Game.deleteMany({ _id: { $in: objectIdsToDelete } })
     .then(async (result) => {
         try {
+            const activity_logs = new ActivityLogs({ user: id, id: 'bulk', type: 'game', method: 'DELETE', message: `Deleted ${game_id.length} games` })
+            await activity_logs.save()
+
             let games = await Game.find({ user: id }).sort({ createdAt: -1 })
 
             res.status(200).json({ 
@@ -653,7 +700,10 @@ exports.uploadBlog = async (req, res) => {
         const newBlog = new Blog({ user: id, ...data, featured_image: `https://drive.google.com/uc?export=view&id=${image_id}`})
 
         await newBlog.save()
-        .then(async () => {
+        .then(async (response) => {
+            const activity_logs = new ActivityLogs({ user: id, id: response._id, type: 'blog', method: 'POST', message: 'Uploaded a blog' })
+            await activity_logs.save()
+
             let blogs = await Blog.find({ user: id }).sort({ createdAt: -1 })
 
             res.status(200).json({ 
@@ -686,6 +736,9 @@ exports.editBlog = async (req, res) => {
                 Blog.findByIdAndUpdate(data._id, {...data, featured_image: `https://drive.google.com/uc?export=view&id=${image_id}`}, { new: true }).populate('user')
                 .then(async (result) => {
                     try {
+                        const activity_logs = new ActivityLogs({ user: id, id: data._id, type: 'blog', method: 'PATCH', message: 'Updated blog' })
+                        await activity_logs.save()
+
                         let blogs = await Blog.find({ user: id }).sort({ createdAt: -1 })
                         res.status(200).json({ 
                             variant: 'success',
@@ -713,6 +766,9 @@ exports.editBlog = async (req, res) => {
         Blog.findByIdAndUpdate(data._id, data, { new: true }).populate('user')
                 .then(async (result) => {
                     try {
+                        const activity_logs = new ActivityLogs({ user: id, id: data._id, type: 'blog', method: 'PATCH', message: 'Updated blog' })
+                        await activity_logs.save()
+
                         let blogs = await Blog.find({ user: id }).sort({ createdAt: -1 })
                         res.status(200).json({ 
                             variant: 'success',
@@ -742,6 +798,9 @@ exports.removeBlog = async (req, res) => {
     Blog.findByIdAndDelete(blog_id)
     .then(async () => {
         try {
+            const activity_logs = new ActivityLogs({ user: id, id: blog_id, type: 'blog', method: 'DELETE', message: 'User deleted blog' })
+            await activity_logs.save()
+
             let blogs = await Blog.find({ user: id }).sort({ createdAt: -1 })
 
             res.status(200).json({ 
@@ -771,6 +830,9 @@ exports.bulkRemoveBlog = async (req, res) => {
     Blog.deleteMany({ _id: { $in: objectIdsToDelete } })
     .then(async (result) => {
         try {
+            const activity_logs = new ActivityLogs({ user: id, id: 'bulk', type: 'blog', method: 'DELETE', message: `Deleted ${blog_id.length} blogs` })
+            await activity_logs.save()
+
             let blogs = await Blog.find({ user: id }).sort({ createdAt: -1 })
 
             res.status(200).json({ 

@@ -4,6 +4,7 @@ const Archive             = require('../models/archive.model')
 const Reports             = require('../models/reports.model')
 const Users               = require('../models/user.model')
 const VideoArchive        = require('../models/videoArchive.model')
+const ActivityLogs        = require('../models/activityLogs.model')
 const uuid                = require('uuid');
 
 exports.getVideos = async (req, res) => {

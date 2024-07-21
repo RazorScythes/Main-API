@@ -2,6 +2,7 @@ const Users                 = require('../models/user.model')
 const Video                 = require('../models/video.model')
 const Game                  = require('../models/games.model')
 const Blog                  = require('../models/blogs.model')
+const ActivityLogs          = require('../models/activityLogs.model') 
 
 exports.getOverviewData = async (req, res) => {
     try {
@@ -28,12 +29,18 @@ exports.getOverviewData = async (req, res) => {
             };
         }));
 
+        const activity_logs = await ActivityLogs.find({}).populate({
+            path: 'user',
+            select: 'username avatar'
+        }).sort({ createdAt: -1 })
+
         res.status(200).json({ 
             users_count: { users_count, latest_user },
             video_count: { video_count, latest_video },
             games_count: { games_count, latest_game },
             blogs_count: { blogs_count, latest_blog },
-            users
+            users,
+            activity_logs
         })
     }
     catch(err) {
