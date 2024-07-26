@@ -31,7 +31,7 @@ exports.getOverviewData = async (req, res) => {
 
         const activity_logs = await ActivityLogs.find({}).populate({
             path: 'user',
-            select: 'username avatar'
+            select: 'username avatar role'
         }).sort({ createdAt: -1 })
 
         res.status(200).json({ 
